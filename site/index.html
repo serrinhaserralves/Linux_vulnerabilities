@@ -3,1920 +3,3526 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
 <title>Linux, Cloud-Native &amp; SAP Vulnerability Intelligence</title>
-<meta name="description" content="Recent vulnerabilities for Linux, Kubernetes, containers and SAP, prioritised by active exploitation, with mitigations.">
-<meta property="og:title" content="Linux, Cloud-Native &amp; SAP Vulnerability Intelligence">
-<meta property="og:description" content="Exploited and critical vulnerabilities with mitigations.">
-<meta name="theme-color" content="#5b5bd6">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Vulnerability intelligence for Linux, Kubernetes, containers and SAP environments.">
+<meta name="theme-color" content="#080d16">
 
 <style>
 :root{
-box-sizing:border-box;
-padding-top:env(safe-area-inset-top,0px);
-padding-bottom:env(safe-area-inset-bottom,0px);
---bg:#f3f5fb;
---surface:#fff;
---text:#161a2e;
---muted:#5f6784;
---line:#e1e5f2;
---accent:#5b5bd6;
---accent2:#0ea5a4;
---accent-bg:#ecebff;
---crit:#d92d3a;
---high:#e5640c;
---med:#b07d00;
---low:#3558d6;
---kev:#8e3fc4;
---ok:#16a34a;
---warn:#b45309;
---info:#0b7bd1;
---g1:#5b5bd6;
---g2:#0ea5a4;
---shadow:0 1px 2px rgba(22,26,46,.05),0 4px 14px rgba(22,26,46,.06)
+  --bg:#080d16;
+  --surface:#0e1624;
+  --surface2:#111c2d;
+  --surface3:#0b1320;
+  --text:#e6edf7;
+  --muted:#8997aa;
+  --line:#1e2b3d;
+  --accent:#3b82f6;
+  --accent-bg:#102442;
+  --critical:#ef4444;
+  --high:#f97316;
+  --medium:#eab308;
+  --low:#60a5fa;
+  --success:#22c55e;
+  --white:#ffffff;
+  --shadow:0 12px 30px rgba(0,0,0,.22);
 }
 
-@media (prefers-color-scheme:dark){
-:root:not([data-theme="light"]){
-color-scheme:dark;
---bg:#0b0e1a;
---surface:#141829;
---text:#e8eaf6;
---muted:#9aa2c4;
---line:#252b45;
---accent:#8b8bff;
---accent2:#2dd4bf;
---accent-bg:#1c2040;
---crit:#ff6b75;
---high:#ff9b4a;
---med:#f5d24a;
---low:#7ea2ff;
---kev:#c78cf5;
---ok:#4ade80;
---warn:#fbbf24;
---info:#60a5fa;
---shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25)
-}
+*{
+  box-sizing:border-box;
 }
 
-:root[data-theme="dark"]{
-color-scheme:dark;
---bg:#0b0e1a;
---surface:#141829;
---text:#e8eaf6;
---muted:#9aa2c4;
---line:#252b45;
---accent:#8b8bff;
---accent2:#2dd4bf;
---accent-bg:#1c2040;
---crit:#ff6b75;
---high:#ff9b4a;
---med:#f5d24a;
---low:#7ea2ff;
---kev:#c78cf5;
---ok:#4ade80;
---warn:#fbbf24;
---info:#60a5fa;
---shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25)
+html{
+  scroll-behavior:smooth;
 }
-
-*{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
 
 body{
-margin:0;
-background:var(--bg);
-color:var(--text);
-font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  line-height:1.5;
 }
 
-.nav{
-background:var(--surface);
-border-bottom:1px solid var(--line);
-position:sticky;
-top:env(safe-area-inset-top,0px);
-z-index:5
+a{
+  color:inherit;
+  text-decoration:none;
 }
 
-.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+button,
+input,
+select{
+  font:inherit;
+}
 
-.nav .wrap{
-display:flex;
-align-items:center;
-justify-content:space-between;
-height:56px;
-gap:12px
+button{
+  cursor:pointer;
+}
+
+.container{
+  width:min(1440px, calc(100% - 40px));
+  margin:auto;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(8,13,22,.96);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(12px);
+}
+
+.header-inner{
+  min-height:68px;
+  display:flex;
+  align-items:center;
+  gap:28px;
 }
 
 .brand{
-font-weight:700;
-font-size:15px;
-display:flex;
-align-items:center;
-gap:10px
+  display:flex;
+  align-items:center;
+  gap:11px;
+  flex-shrink:0;
 }
 
-.logo{
-width:28px;
-height:28px;
-border-radius:8px;
-background:linear-gradient(135deg,var(--g1),var(--g2));
-color:#fff;
-display:grid;
-place-items:center;
-font:700 12px ui-monospace,Menlo,monospace
+.brand-mark{
+  width:34px;
+  height:34px;
+  border:1px solid #285ea8;
+  background:#0d1c31;
+  display:grid;
+  place-items:center;
+  border-radius:7px;
+  color:#60a5fa;
+  font-weight:800;
+  font-size:14px;
 }
 
-.nav small{color:var(--muted)}
+.brand-text{
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.01em;
+  white-space:nowrap;
+}
+
+.nav{
+  display:flex;
+  align-items:center;
+  gap:3px;
+  min-width:0;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+
+.nav::-webkit-scrollbar{
+  display:none;
+}
+
+.nav a{
+  padding:8px 11px;
+  border-radius:6px;
+  color:var(--muted);
+  font-size:13px;
+  white-space:nowrap;
+  transition:.15s ease;
+}
+
+.nav a:hover,
+.nav a.active{
+  color:var(--text);
+  background:var(--surface2);
+}
+
+.nav a.active{
+  color:#8dbaff;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
 
 .hero{
-margin:22px 0 0;
-padding:26px 24px;
-border-radius:16px;
-background:linear-gradient(120deg,var(--g1),var(--g2));
-color:#fff;
-box-shadow:var(--shadow)
+  padding:52px 0 34px;
+  border-bottom:1px solid var(--line);
+}
+
+.hero-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:30px;
+  align-items:end;
+}
+
+.eyebrow{
+  color:#6fa8ff;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  margin-bottom:12px;
 }
 
 h1{
-margin:0;
-font-size:25px;
-font-weight:700;
-letter-spacing:-.01em
+  margin:0;
+  font-size:clamp(28px,4vw,46px);
+  line-height:1.08;
+  letter-spacing:-.035em;
 }
 
 .hero p{
-margin:6px 0 0;
-max-width:660px;
-opacity:.92
+  margin:16px 0 0;
+  max-width:760px;
+  color:var(--muted);
+  font-size:15px;
 }
 
+.updated{
+  color:var(--muted);
+  font-size:12px;
+  text-align:right;
+}
+
+/* =========================================================
+   STATS
+   ========================================================= */
+
 .stats{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-gap:12px;
-margin:18px 0
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+  padding:22px 0;
 }
 
 .stat{
-background:var(--surface);
-border:1px solid var(--line);
-border-left:4px solid var(--c);
-border-radius:12px;
-padding:14px 16px;
-box-shadow:var(--shadow)
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:18px;
 }
 
-.stat b{
-display:block;
-font-size:28px;
-font-weight:700;
-line-height:1.1;
-color:var(--c)
+.stat-label{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:7px;
 }
 
-.stat span{
-color:var(--muted);
-font-size:12px;
-text-transform:uppercase;
-letter-spacing:.05em
+.stat-value{
+  font-size:25px;
+  line-height:1;
+  font-weight:750;
 }
 
-.s0{--c:var(--accent)}
-.s1{--c:var(--crit)}
-.s2{--c:var(--high)}
-.s3{--c:var(--kev)}
-
-.tools{
-display:flex;
-flex-wrap:wrap;
-gap:10px;
-margin-bottom:12px
+.stat-sub{
+  margin-top:8px;
+  font-size:11px;
+  color:var(--muted);
 }
 
-input,select{
-background:var(--surface);
-color:var(--text);
-border:1px solid var(--line);
-border-radius:10px;
-padding:9px 12px;
-font:inherit
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
+.section{
+  padding:34px 0;
+  scroll-margin-top:82px;
 }
 
-input:focus,select:focus{
-outline:2px solid var(--accent);
-outline-offset:1px
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:20px;
+  margin-bottom:17px;
 }
 
-input{
-flex:1;
-min-width:200px
+.section-title{
+  margin:0;
+  font-size:20px;
+  letter-spacing:-.02em;
 }
 
-label.k{
-display:flex;
-align-items:center;
-gap:6px;
-color:var(--muted);
-padding:0 4px
+.section-description{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:4px;
 }
 
-.tabs{
-display:flex;
-flex-wrap:wrap;
-gap:6px;
-margin-bottom:12px
+/* =========================================================
+   FILTERS
+   ========================================================= */
+
+.filters{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:14px;
+  margin-bottom:16px;
 }
 
-.tab{
-border:1px solid var(--line);
-background:var(--surface);
-color:var(--muted);
-border-radius:99px;
-padding:5px 14px;
-cursor:pointer;
-font:inherit;
-font-size:13px
+.filter-grid{
+  display:grid;
+  grid-template-columns:minmax(220px,2fr) repeat(4,minmax(120px,1fr));
+  gap:9px;
 }
 
-.tab.on{
-background:linear-gradient(120deg,var(--g1),var(--g2));
-color:#fff;
-border-color:transparent
+.input,
+.select{
+  width:100%;
+  min-height:40px;
+  border:1px solid var(--line);
+  background:var(--surface3);
+  color:var(--text);
+  border-radius:6px;
+  padding:0 11px;
+  outline:none;
 }
 
-.tbl{
-background:var(--surface);
-border:1px solid var(--line);
-border-radius:14px;
-overflow-x:auto;
-box-shadow:var(--shadow)
+.input:focus,
+.select:focus{
+  border-color:#315f99;
+}
+
+.checkbox-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px;
+  align-items:center;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+}
+
+.checkbox{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.checkbox input{
+  accent-color:var(--accent);
+}
+
+.filter-actions{
+  display:flex;
+  gap:8px;
+  margin-left:auto;
+}
+
+.btn{
+  min-height:38px;
+  border:1px solid var(--line);
+  background:var(--surface2);
+  color:var(--text);
+  border-radius:6px;
+  padding:0 13px;
+  font-size:12px;
+}
+
+.btn:hover{
+  border-color:#34557d;
+}
+
+.btn-primary{
+  background:var(--accent-bg);
+  border-color:#24589a;
+  color:#a9cbff;
+}
+
+/* =========================================================
+   CATEGORY BAR
+   ========================================================= */
+
+.category-bar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-bottom:16px;
+}
+
+.category{
+  border:1px solid var(--line);
+  background:var(--surface);
+  color:var(--muted);
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:11px;
+}
+
+.category.active{
+  background:var(--accent-bg);
+  border-color:#24589a;
+  color:#a9cbff;
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.table-wrap{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:9px;
+  overflow:auto;
 }
 
 table{
-width:100%;
-border-collapse:collapse;
-min-width:760px
+  width:100%;
+  border-collapse:collapse;
+  min-width:980px;
 }
 
 th{
-text-align:left;
-font-size:12px;
-text-transform:uppercase;
-letter-spacing:.05em;
-color:var(--muted);
-padding:11px 14px;
-border-bottom:1px solid var(--line);
-font-weight:600;
-background:var(--accent-bg)
+  text-align:left;
+  padding:11px 13px;
+  background:var(--surface2);
+  border-bottom:1px solid var(--line);
+  color:var(--muted);
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.07em;
 }
 
 td{
-padding:11px 14px;
-border-bottom:1px solid var(--line);
-vertical-align:top
+  padding:13px;
+  border-bottom:1px solid #172337;
+  vertical-align:top;
+  font-size:12px;
 }
 
-tr.r{cursor:pointer}
-tr.r:hover td{background:var(--accent-bg)}
-tr:last-child td{border-bottom:0}
-
-.id{
-font:600 13px ui-monospace,Menlo,Consolas,monospace;
-white-space:nowrap
+tbody tr{
+  transition:.12s ease;
 }
 
-.pill{
-display:inline-block;
-font-size:11px;
-font-weight:700;
-padding:2px 9px;
-border-radius:99px;
-background:color-mix(in srgb,currentColor 15%,transparent);
-white-space:nowrap
+tbody tr:hover{
+  background:#101a29;
 }
 
-.Critical{color:var(--crit)}
-.High{color:var(--high)}
-.Medium{color:var(--med)}
-.Low{color:var(--low)}
-.KEV{color:var(--kev)}
-
-.muted{color:var(--muted)}
-
-.det td{
-background:var(--accent-bg);
-color:var(--text)
+tbody tr:last-child td{
+  border-bottom:0;
 }
 
-.det a{
-color:var(--accent);
-font-weight:600
+.cve{
+  color:#82b5ff;
+  font-weight:700;
 }
 
-h2{
-font-size:17px;
-margin:30px 0 4px
+.title-cell{
+  max-width:380px;
 }
 
-.sub{
-color:var(--muted);
-margin:0 0 12px
+.title-main{
+  font-weight:650;
 }
 
-.src{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-gap:12px
+.title-sub{
+  color:var(--muted);
+  margin-top:3px;
+  font-size:11px;
 }
 
-.sc{
-background:var(--surface);
-border:1px solid var(--line);
-border-radius:12px;
-padding:13px 14px;
-box-shadow:var(--shadow)
+.mono{
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
 }
 
-.sc .h{
-display:flex;
-align-items:center;
-gap:8px
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  border-radius:5px;
+  padding:3px 7px;
+  font-size:10px;
+  font-weight:750;
+  white-space:nowrap;
 }
 
-.dot{
-width:9px;
-height:9px;
-border-radius:50%;
-background:var(--ok);
-flex:none;
-box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)
+.badge-critical{
+  color:#ffb0b0;
+  background:rgba(239,68,68,.12);
+  border:1px solid rgba(239,68,68,.3);
 }
 
-.sc a{
-color:var(--text);
-font-weight:650;
-text-decoration:none
+.badge-high{
+  color:#ffc18f;
+  background:rgba(249,115,22,.11);
+  border:1px solid rgba(249,115,22,.28);
 }
 
-.sc a:hover{color:var(--accent)}
-
-.sc .t{
-margin-left:auto;
-font-size:11px;
-font-weight:700;
-color:var(--accent);
-background:var(--accent-bg);
-border-radius:99px;
-padding:1px 9px;
-white-space:nowrap
+.badge-medium{
+  color:#f4d96d;
+  background:rgba(234,179,8,.09);
+  border:1px solid rgba(234,179,8,.24);
 }
 
-.sc p{
-margin:6px 0 8px;
-color:var(--muted);
-font-size:13px
+.badge-low{
+  color:#9cc7ff;
+  background:rgba(96,165,250,.1);
+  border:1px solid rgba(96,165,250,.24);
 }
 
-.sc .n{
-font-size:12px;
-color:var(--muted)
+.badge-fixed{
+  color:#86efac;
+  background:rgba(34,197,94,.09);
+  border:1px solid rgba(34,197,94,.23);
 }
 
-.sc .n b{color:var(--accent2)}
-
-.foot{
-margin:22px 0 40px;
-color:var(--muted);
-font-size:12px;
-display:grid;
-gap:6px
+.badge-yes{
+  color:#86efac;
 }
 
-.demo{
-background:var(--accent-bg);
-color:var(--accent);
-border-radius:10px;
-padding:9px 13px;
-font-size:13px;
-margin-bottom:14px;
-border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)
+.badge-no{
+  color:#fca5a5;
 }
 
-.fix{--fc:var(--ok)}
-.wa{--fc:var(--warn)}
-.no{--fc:var(--crit)}
-.vf{--fc:var(--info)}
-.un{--fc:var(--muted)}
-
-.fx{
-display:inline-block;
-font-size:11px;
-font-weight:700;
-padding:2px 9px;
-border-radius:99px;
-margin-left:4px;
-white-space:nowrap;
-background:color-mix(in srgb,var(--fc) 16%,transparent);
-color:var(--fc)
+.badge-unknown{
+  color:var(--muted);
 }
 
-.mit{
-margin-top:12px;
-background:var(--surface);
-border:1px solid color-mix(in srgb,var(--fc) 40%,var(--line));
-border-left:5px solid var(--fc);
-border-radius:10px;
-padding:10px 14px
+.kev{
+  color:#fca5a5;
+  font-weight:700;
 }
 
-.mh{
-display:flex;
-align-items:center;
-gap:8px;
-margin-bottom:8px
+.not-kev{
+  color:var(--muted);
 }
 
-.mh .fx{margin-left:0}
+/* =========================================================
+   RISK
+   ========================================================= */
 
-.mit ul{
-list-style:none;
-margin:0;
-padding:0;
-display:grid;
-gap:8px
+.risk{
+  font-weight:800;
 }
 
-.mit li{
-display:flex;
-gap:10px;
-align-items:flex-start
+.risk-critical{
+  color:#ff7777;
 }
 
-.chip{
-flex:none;
-min-width:86px;
-text-align:center;
-font-size:11px;
-font-weight:700;
-padding:2px 8px;
-border-radius:6px;
-background:color-mix(in srgb,var(--cc) 16%,transparent);
-color:var(--cc)
+.risk-very-high{
+  color:#ff9a5c;
 }
 
-.c-ok{--cc:var(--ok)}
-.c-wa{--cc:var(--warn)}
-.c-pu{--cc:var(--kev)}
-.c-in{--cc:var(--info)}
-.c-te{--cc:var(--accent2)}
-.c-no{--cc:var(--crit)}
-.c-un{--cc:var(--muted)}
-
-.lg{
-display:flex;
-flex-wrap:wrap;
-gap:6px;
-align-items:center;
-margin:-4px 0 12px;
-color:var(--muted);
-font-size:12px
+.risk-high{
+  color:#f5b642;
 }
 
-.lg .fx{margin:0}
-
-th[data-k]{
-cursor:pointer;
-user-select:none;
-white-space:nowrap
+.risk-medium{
+  color:#a7c7ff;
 }
 
-th[data-k]:hover{color:var(--accent)}
-th[data-dir="1"]::after{content:" ▲";color:var(--accent)}
-th[data-dir="-1"]::after{content:" ▼";color:var(--accent)}
-
-.P1{color:var(--crit)}
-.P2{color:var(--high)}
-.P3{color:var(--muted)}
-
-.dot.bad{
-background:var(--crit);
-box-shadow:0 0 0 3px color-mix(in srgb,var(--crit) 25%,transparent)
+.risk-low{
+  color:#7ea9dc;
 }
 
-.dot.off{
-background:var(--muted);
-box-shadow:0 0 0 3px color-mix(in srgb,var(--muted) 25%,transparent)
+/* =========================================================
+   EMPTY / LOADING
+   ========================================================= */
+
+.empty{
+  padding:42px 20px;
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
 }
 
-tr.r:focus-visible{
-outline:2px solid var(--accent);
-outline-offset:-2px
+.loading{
+  padding:42px 20px;
+  text-align:center;
+  color:var(--muted);
 }
 
-/* Applicability */
-.app-box{
-margin-top:14px;
-background:var(--surface);
-border:1px solid var(--line);
-border-radius:10px;
-overflow:hidden
+/* =========================================================
+   SOURCE HEALTH
+   ========================================================= */
+
+.source-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:11px;
 }
 
-.app-head{
-padding:9px 12px;
-font-size:12px;
-font-weight:700;
-text-transform:uppercase;
-letter-spacing:.05em;
-color:var(--muted);
-border-bottom:1px solid var(--line)
+.source-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:16px;
 }
 
-.app-row{
-display:grid;
-grid-template-columns:1.2fr .8fr 1fr 1fr;
-gap:10px;
-padding:9px 12px;
-border-bottom:1px solid var(--line);
-font-size:12px
+.source-top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
 }
 
-.app-row:last-child{border-bottom:0}
-
-.app-label{
-color:var(--muted);
-font-size:11px;
-text-transform:uppercase;
-letter-spacing:.03em
+.source-name{
+  font-size:13px;
+  font-weight:700;
 }
 
-.app-value{
-font-weight:600
+.source-status{
+  font-size:10px;
+  color:var(--success);
+  font-weight:700;
 }
 
-.app-fixed{color:var(--ok)}
-.app-affected{color:var(--crit)}
-.app-status{color:var(--warn)}
-
-.version-list{
-display:flex;
-flex-wrap:wrap;
-gap:6px;
-margin-top:6px
+.source-meta{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.55;
 }
 
-.version-chip{
-display:inline-block;
-padding:3px 8px;
-border-radius:6px;
-font-size:11px;
-font-weight:600;
-background:var(--accent-bg);
-color:var(--accent)
+/* =========================================================
+   DETAILS
+   ========================================================= */
+
+.detail{
+  display:none;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:20px;
+  margin-top:16px;
 }
 
-@media (max-width:720px){
-table{min-width:0}
-thead{display:none}
-table,tbody,tr,td{display:block}
-tr.r{
-padding:10px 12px;
-border-bottom:1px solid var(--line)
-}
-td{
-border:0;
-padding:3px 0
-}
-td[data-l]::before{
-content:attr(data-l) ": ";
-color:var(--muted);
-font-size:12px
-}
-tr.det td{padding:10px 12px}
-tr.det td:first-child{display:none}
-.hero{padding:20px 16px}
-h1{font-size:21px}
-
-.app-row{
-grid-template-columns:1fr 1fr
+.detail.show{
+  display:block;
 }
 
-.app-row > div:nth-child(3),
-.app-row > div:nth-child(4){
-grid-column:span 2
+.detail-head{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  align-items:flex-start;
 }
+
+.detail-id{
+  color:#82b5ff;
+  font-family:ui-monospace,monospace;
+  font-size:12px;
+  font-weight:700;
+}
+
+.detail h2{
+  margin:5px 0 0;
+  font-size:22px;
+  letter-spacing:-.02em;
+}
+
+.close-detail{
+  border:1px solid var(--line);
+  background:var(--surface2);
+  color:var(--muted);
+  width:32px;
+  height:32px;
+  border-radius:6px;
+}
+
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:9px;
+  margin:20px 0;
+}
+
+.metric{
+  background:var(--surface3);
+  border:1px solid var(--line);
+  border-radius:7px;
+  padding:12px;
+}
+
+.metric-label{
+  font-size:10px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+
+.metric-value{
+  margin-top:5px;
+  font-size:15px;
+  font-weight:750;
+}
+
+.detail-grid{
+  display:grid;
+  grid-template-columns:1.5fr 1fr;
+  gap:16px;
+}
+
+.detail-card{
+  border:1px solid var(--line);
+  background:var(--surface3);
+  border-radius:8px;
+  padding:15px;
+}
+
+.detail-card h3{
+  margin:0 0 10px;
+  font-size:13px;
+}
+
+.detail-card p{
+  margin:0;
+  color:#bac6d6;
+  font-size:12px;
+  line-height:1.65;
+  white-space:pre-wrap;
+}
+
+.detail-card + .detail-card{
+  margin-top:12px;
+}
+
+.detail-list{
+  margin:0;
+  padding-left:18px;
+  color:#bac6d6;
+  font-size:12px;
+}
+
+.detail-list li{
+  margin:5px 0;
+}
+
+.applicability{
+  overflow:auto;
+}
+
+.applicability table{
+  min-width:700px;
+}
+
+.applicability th,
+.applicability td{
+  padding:9px 10px;
+  font-size:11px;
+}
+
+.inline-link{
+  color:#82b5ff;
+}
+
+.inline-link:hover{
+  text-decoration:underline;
+}
+
+.specified-no{
+  color:var(--muted);
+  font-style:italic;
+}
+
+/* =========================================================
+   STACK
+   ========================================================= */
+
+.stack{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.stack-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:17px;
+}
+
+.stack-card h3{
+  margin:0 0 6px;
+  font-size:14px;
+}
+
+.stack-card p{
+  color:var(--muted);
+  font-size:12px;
+  margin:0 0 12px;
+}
+
+.stack-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+
+.stack-tag{
+  border:1px solid var(--line);
+  background:var(--surface3);
+  border-radius:5px;
+  padding:5px 8px;
+  font-size:11px;
+  color:#b7c5d7;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+footer{
+  border-top:1px solid var(--line);
+  margin-top:30px;
+  padding:28px 0 38px;
+  color:var(--muted);
+  font-size:11px;
+}
+
+.footer-grid{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+}
+
+.footer-links{
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+.footer-links a{
+  color:#8fb7ec;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media(max-width:1100px){
+  .filter-grid{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+
+  .stats{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .source-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .metrics{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:760px){
+  .container{
+    width:min(100% - 24px,1440px);
+  }
+
+  .header-inner{
+    min-height:60px;
+    gap:14px;
+  }
+
+  .brand-text{
+    display:none;
+  }
+
+  .nav{
+    flex:1;
+  }
+
+  .nav a{
+    padding:7px 9px;
+  }
+
+  .hero{
+    padding:35px 0 25px;
+  }
+
+  .hero-grid{
+    grid-template-columns:1fr;
+  }
+
+  .updated{
+    text-align:left;
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .filter-grid{
+    grid-template-columns:1fr;
+  }
+
+  .filter-actions{
+    margin-left:0;
+  }
+
+  .source-grid{
+    grid-template-columns:1fr;
+  }
+
+  .metrics{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .detail-grid,
+  .stack{
+    grid-template-columns:1fr;
+  }
+
+  .section{
+    padding:27px 0;
+  }
+
+  .footer-grid{
+    flex-direction:column;
+  }
+}
+
+@media(max-width:450px){
+  .stats{
+    grid-template-columns:1fr;
+  }
+
+  .metrics{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .detail{
+    padding:14px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div class="nav">
-<div class="wrap">
-<div class="brand">
-<span class="logo">LV</span>
-vulnerabilities-linux.com
-</div>
-<small>Linux · Kubernetes · Containers · SAP</small>
-</div>
-</div>
+<header class="header">
+  <div class="container header-inner">
 
-<div class="wrap">
+    <a href="#overview" class="brand" aria-label="Home">
+      <div class="brand-mark">VI</div>
+      <div class="brand-text">Vulnerability Intelligence</div>
+    </a>
 
-<div class="hero">
-<h1>Linux, Cloud-Native &amp; SAP Vulnerability Intelligence</h1>
-<p>A consolidated view of vulnerabilities affecting Linux distributions, the kernel, Kubernetes, the container ecosystem and SAP solutions, prioritised by active exploitation.</p>
-<p id="upd" style="font-size:13px;opacity:.85">Snapshot data, not live.</p>
-</div>
+    <nav class="nav" id="mainNav">
+      <a href="#overview" data-nav="overview">Overview</a>
+      <a href="#vulnerabilities" data-nav="vulnerabilities">Vulnerabilities</a>
+      <a href="#linux" data-nav="linux">Linux</a>
+      <a href="#kubernetes" data-nav="kubernetes">Kubernetes</a>
+      <a href="#containers" data-nav="containers">Containers</a>
+      <a href="#sap" data-nav="sap">SAP</a>
+      <a href="#threat-intelligence" data-nav="threat-intelligence">Threat Intelligence</a>
+      <a href="#sources" data-nav="sources">Sources</a>
+    </nav>
 
-<div class="stats" id="stats"></div>
+  </div>
+</header>
 
-<div class="demo" id="demo">
-Snapshot of recent threats compiled from public reporting. When hosted with the collector, this page loads live data from vulns.json.
-</div>
+<main>
 
-<div class="tools">
+<section class="hero" id="overview">
+  <div class="container hero-grid">
 
-<input id="q" type="search" placeholder="Search CVE ID, product or keyword…">
+    <div>
+      <div class="eyebrow">Security Intelligence Platform</div>
 
-<select id="sev">
-<option value="">All severities</option>
-<option>Critical</option>
-<option>High</option>
-<option>Medium</option>
-<option>Low</option>
-</select>
+      <h1>
+        Linux, Cloud-Native &amp;<br>
+        SAP Vulnerability Intelligence
+      </h1>
 
-<select id="fx">
-<option value="">All fix states</option>
-<option value="fix">Patch available</option>
-<option value="workaround">Mitigation only</option>
-<option value="none">No fix</option>
-<option value="verify">Verify with vendor</option>
-<option value="unknown">Unknown</option>
-</select>
+      <p>
+        Continuous vulnerability monitoring across Linux distributions,
+        Linux kernel, Kubernetes, container runtimes and SAP environments.
+      </p>
+    </div>
 
-<label class="k">
-<input type="checkbox" id="kev" style="flex:none;min-width:0">
-Actively exploited only
-</label>
+    <div class="updated">
+      <div>Last update</div>
+      <strong id="lastUpdated">Loading...</strong>
+    </div>
 
-<select id="srt">
-<option value="pri">Sort: priority</option>
-<option value="new">Sort: newest</option>
-<option value="cvss">Sort: CVSS</option>
-</select>
+  </div>
+</section>
 
-<select id="prd"></select>
+<section class="container">
 
-<select id="age">
-<option value="0">Any date</option>
-<option value="7">Last 7 days</option>
-<option value="30">Last 30 days</option>
-</select>
+  <div class="stats">
 
-</div>
+    <div class="stat">
+      <div class="stat-label">Total vulnerabilities</div>
+      <div class="stat-value" id="statTotal">—</div>
+      <div class="stat-sub">Tracked CVEs</div>
+    </div>
 
-<div class="tools">
+    <div class="stat">
+      <div class="stat-label">Critical</div>
+      <div class="stat-value" id="statCritical">—</div>
+      <div class="stat-sub">Critical severity</div>
+    </div>
 
-<input id="stack" placeholder="My stack: e.g. openssh, kubernetes, netweaver (kept only in your browser)">
+    <div class="stat">
+      <div class="stat-label">High risk</div>
+      <div class="stat-value" id="statHigh">—</div>
+      <div class="stat-sub">Risk score ≥ 80</div>
+    </div>
 
-<label class="k">
-<input type="checkbox" id="mine" style="flex:none;min-width:0">
-Only my stack
-</label>
+    <div class="stat">
+      <div class="stat-label">CISA KEV</div>
+      <div class="stat-value" id="statKev">—</div>
+      <div class="stat-sub">Known exploited</div>
+    </div>
 
-<button class="tab" id="csv">Export CSV</button>
+    <div class="stat">
+      <div class="stat-label">Fix available</div>
+      <div class="stat-value" id="statFixed">—</div>
+      <div class="stat-sub">Confirmed by sources</div>
+    </div>
 
-<a class="tab" href="feed.xml" style="text-decoration:none">RSS feed</a>
+  </div>
 
-</div>
+</section>
 
-<div class="tabs" id="tabs"></div>
+<section class="section container" id="vulnerabilities">
 
-<div class="lg" id="lg"></div>
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">Vulnerabilities</h2>
+      <div class="section-description">
+        Search and filter the vulnerability intelligence dataset.
+      </div>
+    </div>
 
-<div class="tbl">
-<table>
+    <div class="filter-actions">
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn btn-primary" id="csvBtn">Export CSV</button>
+    </div>
+  </div>
 
-<thead>
-<tr>
-<th data-k="id" tabindex="0" role="button">CVE</th>
-<th data-k="t" tabindex="0" role="button">Vulnerability</th>
-<th data-k="p" tabindex="0" role="button">Component</th>
-<th data-k="s" tabindex="0" role="button">Severity</th>
-<th data-k="v" tabindex="0" role="button">CVSS</th>
-<th data-k="pri" tabindex="0" role="button">Priority</th>
-<th data-k="d" tabindex="0" role="button">Published</th>
-</tr>
-</thead>
+  <div class="filters">
 
-<tbody id="rows"></tbody>
+    <div class="filter-grid">
 
-</table>
-</div>
+      <input
+        id="search"
+        class="input"
+        type="search"
+        placeholder="Search CVE, product, description, version..."
+        autocomplete="off"
+      >
 
-<div class="lg" style="margin:10px 0">
-<span id="cnt"></span>
-<button class="tab" id="more" style="display:none">Load more</button>
-</div>
+      <select id="severity" class="select">
+        <option value="">All severities</option>
+        <option value="Critical">Critical</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
 
-<h2>Data sources</h2>
+      <select id="category" class="select">
+        <option value="">All categories</option>
+        <option value="Linux">Linux</option>
+        <option value="Kernel">Kernel</option>
+        <option value="Kubernetes">Kubernetes</option>
+        <option value="Containers">Containers</option>
+        <option value="SAP">SAP</option>
+      </select>
 
-<p class="sub" id="srcsub"></p>
+      <select id="risk" class="select">
+        <option value="">All risk levels</option>
+        <option value="critical">Critical ≥ 95</option>
+        <option value="very-high">Very High ≥ 80</option>
+        <option value="high">High ≥ 60</option>
+        <option value="medium">Medium ≥ 40</option>
+        <option value="low">Low &lt; 40</option>
+      </select>
 
-<div class="src" id="src"></div>
+      <select id="sort" class="select">
+        <option value="risk">Risk score</option>
+        <option value="published">Published</option>
+        <option value="cvss">CVSS</option>
+        <option value="epss">EPSS</option>
+        <option value="cve">CVE</option>
+      </select>
 
-<div class="foot">
-<div>
-Data comes from public sources (CISA KEV, NVD, OSV.dev, vendor and distribution advisories, SAP, ENISA, FIRST EPSS) and is provided as-is for awareness only; it may be incomplete or delayed. Always verify against the vendor advisory before acting. Each provider's terms and attribution requirements apply. Priority is a simple ranking (exploited, then EPSS, then CVSS), not an assessment of your environment. The My stack filter is stored only in your browser. To report a correction, open an issue on this site's repository.
-</div>
-</div>
+    </div>
 
-</div>
+    <div class="checkbox-row">
+
+      <label class="checkbox">
+        <input type="checkbox" id="kevOnly">
+        CISA KEV only
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" id="fixedOnly">
+        Fix available
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" id="stackOnly">
+        My stack
+      </label>
+
+      <span id="resultCount" class="section-description"></span>
+
+    </div>
+
+  </div>
+
+  <div class="category-bar" id="categoryBar">
+    <button class="category active" data-category="">All</button>
+    <button class="category" data-category="Linux">Linux</button>
+    <button class="category" data-category="Kernel">Kernel</button>
+    <button class="category" data-category="Kubernetes">Kubernetes</button>
+    <button class="category" data-category="Containers">Containers</button>
+    <button class="category" data-category="SAP">SAP</button>
+  </div>
+
+  <div class="table-wrap">
+
+    <div id="loading" class="loading">
+      Loading vulnerability intelligence...
+    </div>
+
+    <table id="vulnerabilityTable" hidden>
+
+      <thead>
+        <tr>
+          <th>CVE</th>
+          <th>Vulnerability</th>
+          <th>Category</th>
+          <th>Severity</th>
+          <th>CVSS</th>
+          <th>EPSS</th>
+          <th>Risk</th>
+          <th>KEV</th>
+          <th>Fix</th>
+          <th>Published</th>
+        </tr>
+      </thead>
+
+      <tbody id="vulnerabilityBody"></tbody>
+
+    </table>
+
+    <div id="empty" class="empty" hidden>
+      No vulnerabilities match the current filters.
+    </div>
+
+  </div>
+
+  <div class="detail" id="detailPanel"></div>
+
+</section>
+
+<!-- =====================================================
+     LINUX
+     ===================================================== -->
+
+<section class="section container" id="linux">
+
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">Linux</h2>
+      <div class="section-description">
+        Linux distributions and Linux kernel vulnerabilities.
+      </div>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <div class="stack-card">
+      <h3>Linux distributions</h3>
+      <p>
+        Distribution-level vulnerabilities and package advisories.
+      </p>
+
+      <div class="stack-list">
+        <span class="stack-tag">RHEL</span>
+        <span class="stack-tag">Ubuntu</span>
+        <span class="stack-tag">Debian</span>
+        <span class="stack-tag">SUSE</span>
+        <span class="stack-tag">AlmaLinux</span>
+        <span class="stack-tag">Rocky Linux</span>
+        <span class="stack-tag">Alpine</span>
+        <span class="stack-tag">openSUSE</span>
+      </div>
+    </div>
+
+    <div class="stack-card">
+      <h3>Linux Kernel</h3>
+      <p>
+        Kernel vulnerabilities, affected versions and available fixes.
+      </p>
+
+      <div class="stack-list">
+        <span class="stack-tag">Linux Kernel</span>
+        <span class="stack-tag">Kernel.org</span>
+        <span class="stack-tag">Distribution kernels</span>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =====================================================
+     KUBERNETES
+     ===================================================== -->
+
+<section class="section container" id="kubernetes">
+
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">Kubernetes</h2>
+      <div class="section-description">
+        Kubernetes core and ecosystem vulnerability intelligence.
+      </div>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <div class="stack-card">
+      <h3>Kubernetes Core</h3>
+      <p>
+        Core Kubernetes components.
+      </p>
+
+      <div class="stack-list">
+        <span class="stack-tag">kube-apiserver</span>
+        <span class="stack-tag">kubelet</span>
+        <span class="stack-tag">kubectl</span>
+        <span class="stack-tag">controller-manager</span>
+        <span class="stack-tag">scheduler</span>
+        <span class="stack-tag">etcd</span>
+      </div>
+    </div>
+
+    <div class="stack-card">
+      <h3>Kubernetes Ecosystem</h3>
+      <p>
+        Widely deployed Kubernetes ecosystem components.
+      </p>
+
+      <div class="stack-list">
+        <span class="stack-tag">ingress-nginx</span>
+        <span class="stack-tag">CoreDNS</span>
+        <span class="stack-tag">CSI</span>
+        <span class="stack-tag">Helm</span>
+        <span class="stack-tag">Metrics Server</span>
+        <span class="stack-tag">Gateway API</span>
+        <span class="stack-tag">Operators</span>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =====================================================
+     CONTAINERS
+     ===================================================== -->
+
+<section class="section container" id="containers">
+
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">Containers</h2>
+      <div class="section-description">
+        Container runtimes and container ecosystem vulnerabilities.
+      </div>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <div class="stack-card">
+      <h3>Container runtimes</h3>
+      <p>
+        Runtime components used by container and Kubernetes environments.
+      </p>
+
+      <div class="stack-list">
+        <span class="stack-tag">containerd</span>
+        <span class="stack-tag">CRI-O</span>
+        <span class="stack-tag">runc</span>
+        <span class="stack-tag">Docker</span>
+      </div>
+    </div>
+
+    <div class="stack-card">
+      <h3>Scope</h3>
+      <p>
+        Container vulnerabilities are kept separate from Kubernetes CVEs
+        to avoid mixing infrastructure layers.
+      </p>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =====================================================
+     SAP
+     ===================================================== -->
+
+<section class="section container" id="sap">
+
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">SAP</h2>
+      <div class="section-description">
+        SAP Security Notes and vulnerability intelligence.
+      </div>
+    </div>
+  </div>
+
+  <div class="stack">
+
+    <div class="stack-card">
+      <h3>SAP Security</h3>
+      <p>
+        Security Notes, affected products and available corrections.
+      </p>
+
+      <div class="stack-list">
+        <span class="stack-tag">SAP Security Notes</span>
+        <span class="stack-tag">ABAP</span>
+        <span class="stack-tag">SAP NetWeaver</span>
+        <span class="stack-tag">SAP HANA</span>
+        <span class="stack-tag">SAP Gateway</span>
+      </div>
+    </div>
+
+    <div class="stack-card">
+      <h3>Patch intelligence</h3>
+      <p>
+        SAP vulnerabilities are monitored independently from the Linux
+        operating system layer.
+      </p>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =====================================================
+     THREAT INTELLIGENCE
+     ===================================================== -->
+
+<section class="section container" id="threat-intelligence">
+
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">Threat Intelligence</h2>
+      <div class="section-description">
+        Prioritised vulnerabilities with exploitation or elevated risk signals.
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="threatViewBtn">
+      View high-risk vulnerabilities
+    </button>
+  </div>
+
+  <div class="stack">
+
+    <div class="stack-card">
+      <h3>CISA Known Exploited Vulnerabilities</h3>
+      <p>
+        Vulnerabilities listed in the CISA KEV catalogue receive a major
+        risk priority increase.
+      </p>
+    </div>
+
+    <div class="stack-card">
+      <h3>Risk prioritisation</h3>
+      <p>
+        Risk combines CVSS, EPSS, exploitation status and Kubernetes-specific
+        criticality into a 0–100 score.
+      </p>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =====================================================
+     SOURCES
+     ===================================================== -->
+
+<section class="section container" id="sources">
+
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">Sources</h2>
+      <div class="section-description">
+        Intelligence feeds currently monitored by the collector.
+      </div>
+    </div>
+  </div>
+
+  <div class="source-grid" id="sourceGrid">
+
+    <div class="source-card">
+      <div class="source-top">
+        <div class="source-name">CISA KEV</div>
+        <div class="source-status">● Online</div>
+      </div>
+      <div class="source-meta">
+        Known exploited vulnerabilities.
+      </div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-top">
+        <div class="source-name">NVD</div>
+        <div class="source-status">● Online</div>
+      </div>
+      <div class="source-meta">
+        National Vulnerability Database.
+      </div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-top">
+        <div class="source-name">OSV</div>
+        <div class="source-status">● Online</div>
+      </div>
+      <div class="source-meta">
+        Open Source Vulnerabilities database.
+      </div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-top">
+        <div class="source-name">Red Hat</div>
+        <div class="source-status">● Online</div>
+      </div>
+      <div class="source-meta">
+        Red Hat Security Data and RHEL applicability.
+      </div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-top">
+        <div class="source-name">Kubernetes</div>
+        <div class="source-status">● Online</div>
+      </div>
+      <div class="source-meta">
+        Kubernetes official vulnerability information.
+      </div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-top">
+        <div class="source-name">SAP</div>
+        <div class="source-status">● Online</div>
+      </div>
+      <div class="source-meta">
+        SAP Security Notes and patch information.
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  <div class="container footer-grid">
+
+    <div>
+      Linux, Cloud-Native &amp; SAP Vulnerability Intelligence
+      <br>
+      Automated security intelligence platform.
+    </div>
+
+    <div class="footer-links">
+      <a href="feed.xml">RSS Feed</a>
+      <a href="vulns.json">JSON</a>
+      <a href="status.json">Status</a>
+    </div>
+
+  </div>
+
+  <div class="container" style="margin-top:16px;">
+    <strong>Disclaimer:</strong>
+    Vulnerability information is aggregated from external sources.
+    Applicability, remediation and exploitation status should be validated
+    against the authoritative vendor advisory before taking action.
+  </div>
+</footer>
 
 <script>
+"use strict";
 
-let D=[];
+/* =========================================================
+   CONFIGURATION
+   ========================================================= */
 
-const $=i=>document.getElementById(i);
+const DATA_URL = "vulns.json";
+const STATUS_URL = "status.json";
 
-const O={
-Critical:0,
-High:1,
-Medium:2,
-Low:3
-};
+const STACK_KEY = "vulnerability_intelligence_stack";
 
-let cats=["All"],
-cat="All",
-open=null;
-
-const e=s=>String(s??"").replace(
-/[&<>"]/g,
-c=>({
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;"
-}[c])
-);
-
-const FX={
-fix:["Patch available","fix"],
-workaround:["Mitigation only","wa"],
-none:["No fix","no"],
-verify:["Verify with vendor","vf"],
-unknown:["Unknown","un"]
-};
-
-const fxs=d=>d.m?d.m.s:"unknown";
-
-const CH={
-Patch:"c-ok",
-Workaround:"c-wa",
-Contain:"c-pu",
-Detect:"c-in",
-Plan:"c-te",
-Action:"c-in",
-None:"c-no",
-Note:"c-un"
-};
-
-const fixBadge=d=>{
-const f=FX[fxs(d)]||FX.unknown;
-return `<span class="fx ${f[1]}">${f[0]}</span>`;
-};
-
-function applicabilityHtml(d){
-
-const systems=Array.isArray(d.affected_systems)
-?d.affected_systems
-:[];
-
-const affected=Array.isArray(d.affected_versions)
-?d.affected_versions
-:[];
-
-const fixed=Array.isArray(d.fixed_versions)
-?d.fixed_versions
-:[];
-
-if(!systems.length&&!affected.length&&!fixed.length){
-return "";
-}
-
-let html=`
-<div class="app-box">
-<div class="app-head">Affected systems &amp; versions</div>
-`;
-
-if(systems.length){
-
-html+=systems.map(s=>{
-
-const family=e(s.family||"Unknown");
-const version=e(s.version||"");
-const status=e(s.status||"affected");
-const fixedValue=e(s.fixed||"");
-const packageName=e(s.package||"");
-
-return `
-<div class="app-row">
-
-<div>
-<div class="app-label">System</div>
-<div class="app-value">${family}</div>
-</div>
-
-<div>
-<div class="app-label">Version</div>
-<div class="app-value">${version||"—"}</div>
-</div>
-
-<div>
-<div class="app-label">Package</div>
-<div class="app-value">${packageName||"—"}</div>
-</div>
-
-<div>
-<div class="app-label">Status</div>
-<div class="app-value ${fixedValue?"app-fixed":"app-affected"}">
-${status}
-${fixedValue?` · fixed: ${fixedValue}`:""}
-</div>
-</div>
-
-</div>
-`;
-
-}).join("");
-
-}
-
-if(affected.length){
-
-html+=`
-<div style="padding:10px 12px;border-top:1px solid var(--line)">
-<div class="app-label">Affected versions</div>
-<div class="version-list">
-${affected.map(v=>`<span class="version-chip">${e(v)}</span>`).join("")}
-</div>
-</div>
-`;
-
-}
-
-if(fixed.length){
-
-html+=`
-<div style="padding:10px 12px;border-top:1px solid var(--line)">
-<div class="app-label">Fixed versions / releases</div>
-<div class="version-list">
-${fixed.map(v=>`<span class="version-chip">${e(v)}</span>`).join("")}
-</div>
-</div>
-`;
-
-}
-
-html+=`</div>`;
-
-return html;
-}
-
-const mitHtml=d=>{
-
-const m=d.m||{
-s:"unknown",
-st:[[
-"Note",
-"The source gives no mitigation details. Check the vendor or distribution advisory."
-]]
-};
-
-const f=FX[m.s]||FX.unknown;
-
-return `
-<div class="mit ${f[1]}">
-
-<div class="mh">
-<b>Mitigation</b>
-<span class="fx ${f[1]}">${f[0]}</span>
-</div>
-
-<ul>
-
-${m.st.map(x=>`
-<li>
-<span class="chip ${CH[x[0]]||"c-un"}">${e(x[0])}</span>
-<span>${e(x[1])}</span>
-</li>
-`).join("")}
-
-</ul>
-
-</div>
-`;
-};
-
-const S=[
-{
-n:"CISA KEV",
-key:"CISA KEV",
-t:"Exploited",
-d:"Catalog of vulnerabilities known to be exploited in the wild.",
-u:"https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
-},
-{
-n:"NVD",
-key:"NVD",
-t:"CVE database",
-d:"NIST National Vulnerability Database with CVSS scores.",
-u:"https://nvd.nist.gov"
-},
-{
-n:"OSV.dev",
-key:"OSV",
-t:"Open source",
-d:"Distribution and open-source vulnerability advisories.",
-u:"https://osv.dev"
-},
-{
-n:"GitHub Advisories",
-key:"GitHub Advisories",
-t:"Open source",
-d:"Reviewed security advisories for open-source projects.",
-u:"https://github.com/advisories"
-},
-{
-n:"Kubernetes CVE feed",
-key:"Kubernetes CVE feed",
-t:"Kubernetes",
-d:"Official CVEs from the Kubernetes Security Response Committee.",
-u:"https://kubernetes.io/docs/reference/issues-security/official-cve-feed/"
-},
-{
-n:"Red Hat Security Data",
-key:"Red Hat",
-t:"Distribution",
-d:"CVE data for RHEL and related products.",
-u:"https://access.redhat.com/security/security-updates/"
-},
-{
-n:"Ubuntu Security Notices",
-key:"Ubuntu",
-t:"Distribution",
-d:"USN advisories for Ubuntu releases.",
-u:"https://ubuntu.com/security/notices"
-},
-{
-n:"Debian Security Advisories",
-key:"Debian",
-t:"Distribution",
-d:"DSA advisories for Debian releases.",
-u:"https://www.debian.org/security/"
-},
-{
-n:"Linux kernel CVEs",
-key:"Linux kernel",
-t:"Kernel",
-d:"CVE announcements from the Linux kernel CNA.",
-u:"https://lore.kernel.org/linux-cve-announce/"
-},
-{
-n:"oss-security",
-key:"oss-security",
-t:"Mailing list",
-d:"Early public disclosures for open-source software.",
-u:"https://www.openwall.com/lists/oss-security/"
-},
-{
-n:"CISA advisories",
-key:"CISA Cyber",
-t:"Advisories",
-d:"CISA cybersecurity advisories and alerts.",
-u:"https://www.cisa.gov/news-events/cybersecurity-advisories"
-},
-{
-n:"ENISA EUVD",
-key:"ENISA",
-t:"EU database",
-d:"European Union Vulnerability Database.",
-u:"https://euvd.enisa.europa.eu"
-},
-{
-n:"SAP Security Patch Day",
-key:"SAP",
-t:"SAP",
-d:"Monthly SAP security notes with affected versions.",
-u:"https://support.sap.com/securitynotes"
-},
-{
-n:"FIRST EPSS",
-key:"EPSS",
-t:"Enrichment",
-d:"Exploit prediction scores added to CVEs.",
-u:"https://www.first.org/epss/"
-}
+const DEFAULT_STACK = [
+  "RHEL",
+  "Ubuntu",
+  "Debian",
+  "SUSE",
+  "AlmaLinux",
+  "Rocky Linux",
+  "Alpine",
+  "Kubernetes",
+  "containerd",
+  "CRI-O",
+  "runc",
+  "Docker",
+  "SAP"
 ];
 
-function renderSrc(cnt,live){
+/* =========================================================
+   STATE
+   ========================================================= */
 
-const tot=Object.values(cnt).reduce((a,b)=>a+b,0);
+let vulnerabilities = [];
+let filtered = [];
+let selectedId = null;
 
-$("srcsub").textContent=
-S.length+
-" sources configured in the collector"+
-(
-live
-?" · "+tot+" records loaded in the last run. Green: records received. Amber: none received. Red: failed."
-:". Run status appears once the page is hosted with the collector."
-);
-
-$("src").innerHTML=S.map(x=>{
-
-const c=cnt[x.key]||0;
-
-const er=ST&&Object.entries(ST.errors||{})
-.find(z=>z[0].startsWith(x.key));
-
-const cl=
-x.key==="EPSS"||!live
-?""
-:c>0
-?""
-:er
-?"bad"
-:"off";
-
-return `
-<div class="sc">
-
-<div class="h">
-
-<span class="dot ${cl}"></span>
-
-<a href="${x.u}" target="_blank" rel="noopener">
-${x.n}
-</a>
-
-<span class="t">${x.t}</span>
-
-</div>
-
-<p>${x.d}</p>
-
-<div class="n">
-
-${
-x.key==="EPSS"
-?"Enrichment"
-:
-live
-?
-(
-c>0
-?`<b>${c}</b> records`
-:
-er
-?`Failed: ${e(er[1])}`
-:"No records in the last run"
-)
-:"Enabled in collector"
-}
-
-</div>
-
-</div>
-`;
-
-}).join("");
-}
-
-function stats(){
-
-const n=f=>D.filter(f).length;
-
-$("stats").innerHTML=[
-["Tracked",D.length],
-["Critical",n(d=>d.s==="Critical")],
-["High",n(d=>d.s==="High")],
-["Actively exploited",n(d=>d.k)]
-]
-.map((a,i)=>`
-<div class="stat s${i}">
-<b>${a[1]}</b>
-<span>${a[0]}</span>
-</div>
-`)
-.join("");
-}
-
-function tabs(){
-
-$("tabs").innerHTML=cats.map(c=>`
-<button class="tab ${c===cat?"on":""}" data-c="${e(c)}">
-${e(c)}
-</button>
-`).join("");
-
-document.querySelectorAll("#tabs .tab").forEach(b=>
-
-b.onclick=()=>{
-
-cat=b.dataset.c;
-
-try{
-history.replaceState(
-null,
-"",
-cat==="All"
-?location.pathname
-:"#"+cat.toLowerCase()
-);
-}catch(_){}
-
-tabs();
-render();
-
-});
-
-}
-
-let ST=null,
-CNT={},
-page=1,
-sk=null,
-sd=1;
-
-const PS=25;
-
-const cv=s=>{
-const m=/^CVE-(\d{4})-(\d+)$/.exec(s);
-return m?m[1]*1e8+(+m[2]):0;
+const state = {
+  threatView:false
 };
 
-const CMP={
-id:(a,b)=>cv(a.id)-cv(b.id),
-t:(a,b)=>a.t.localeCompare(b.t),
-p:(a,b)=>a.p.localeCompare(b.p),
-s:(a,b)=>O[a.s]-O[b.s],
-v:(a,b)=>(a.v||0)-(b.v||0),
-pri:(a,b)=>pri(a)-pri(b),
-d:(a,b)=>a.d.localeCompare(b.d)
-};
+/* =========================================================
+   HELPERS
+   ========================================================= */
 
-const DEF={
-id:-1,
-t:1,
-p:1,
-s:1,
-v:-1,
-pri:-1,
-d:-1
-};
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
 
-function heads(){
+function safeArray(value){
 
-document.querySelectorAll("th[data-k]").forEach(h=>{
+  if(Array.isArray(value)){
+    return value;
+  }
 
-const on=h.dataset.k===sk;
+  if(value === null || value === undefined || value === ""){
+    return [];
+  }
 
-h.dataset.dir=on?sd:"";
+  if(typeof value === "string"){
 
-h.setAttribute(
-"aria-sort",
-on
-?(sd>0?"ascending":"descending")
-:"none"
+    try{
+      const parsed = JSON.parse(value);
+
+      if(Array.isArray(parsed)){
+        return parsed;
+      }
+    }catch(e){}
+
+    return value
+      .split(/\s*[;,]\s*/)
+      .map(x => x.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function parseBoolean(value){
+
+  if(value === true || value === 1){
+    return true;
+  }
+
+  if(typeof value === "string"){
+
+    const normalized = value.trim().toLowerCase();
+
+    if(
+      normalized === "true" ||
+      normalized === "yes" ||
+      normalized === "1"
+    ){
+      return true;
+    }
+
+    if(
+      normalized === "false" ||
+      normalized === "no" ||
+      normalized === "0"
+    ){
+      return false;
+    }
+  }
+
+  return null;
+}
+
+function numberOrNull(value){
+
+  if(value === null || value === undefined || value === ""){
+    return null;
+  }
+
+  const n = Number(value);
+
+  return Number.isFinite(n) ? n : null;
+}
+
+function normaliseSeverity(value){
+
+  const v = String(value || "").toLowerCase();
+
+  if(v.includes("critical")) return "Critical";
+  if(v.includes("high")) return "High";
+  if(v.includes("medium") || v.includes("moderate")) return "Medium";
+  if(v.includes("low")) return "Low";
+
+  return "Unknown";
+}
+
+function severityWeight(value){
+
+  const map = {
+    Critical:4,
+    High:3,
+    Medium:2,
+    Low:1,
+    Unknown:0
+  };
+
+  return map[normaliseSeverity(value)] || 0;
+}
+
+function formatDate(value){
+
+  if(!value){
+    return "—";
+  }
+
+  const d = new Date(value);
+
+  if(Number.isNaN(d.getTime())){
+    return String(value);
+  }
+
+  return d.toLocaleDateString("en-GB",{
+    year:"numeric",
+    month:"short",
+    day:"2-digit"
+  });
+}
+
+function formatDateTime(value){
+
+  if(!value){
+    return "Unknown";
+  }
+
+  const d = new Date(value);
+
+  if(Number.isNaN(d.getTime())){
+    return String(value);
+  }
+
+  return d.toLocaleString("en-GB",{
+    year:"numeric",
+    month:"short",
+    day:"2-digit",
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+}
+
+function formatEpss(value){
+
+  const n = numberOrNull(value);
+
+  if(n === null){
+    return "—";
+  }
+
+  return `${(n <= 1 ? n * 100 : n).toFixed(1)}%`;
+}
+
+function epssAsDecimal(value){
+
+  const n = numberOrNull(value);
+
+  if(n === null){
+    return null;
+  }
+
+  return n > 1 ? n / 100 : n;
+}
+
+/* =========================================================
+   RISK SCORE
+   ========================================================= */
+
+function calculateRisk(v){
+
+  let score = 0;
+
+  const cvss = numberOrNull(v.cvss);
+  const epss = epssAsDecimal(v.epss);
+  const kev = !!v.kev;
+  const severity = normaliseSeverity(v.severity);
+  const category = String(v.category || "");
+
+  /*
+    CISA KEV +40
+    EPSS >= 0.90 +30
+    EPSS >= 0.70 +20
+    EPSS >= 0.40 +10
+    CVSS >= 9 +20
+    CVSS >= 7 +15
+    CVSS >= 4 +8
+    Critical +5
+    Kubernetes Critical +5
+  */
+
+  if(kev){
+    score += 40;
+  }
+
+  if(epss !== null){
+
+    if(epss >= 0.90){
+      score += 30;
+    }else if(epss >= 0.70){
+      score += 20;
+    }else if(epss >= 0.40){
+      score += 10;
+    }
+  }
+
+  if(cvss !== null){
+
+    if(cvss >= 9){
+      score += 20;
+    }else if(cvss >= 7){
+      score += 15;
+    }else if(cvss >= 4){
+      score += 8;
+    }
+  }
+
+  if(severity === "Critical"){
+    score += 5;
+  }
+
+  if(
+    category.toLowerCase() === "kubernetes" &&
+    severity === "Critical"
+  ){
+    score += 5;
+  }
+
+  return Math.min(100,score);
+}
+
+function riskLevel(score){
+
+  if(score >= 95) return {
+    label:"Critical",
+    className:"risk-critical"
+  };
+
+  if(score >= 80) return {
+    label:"Very High",
+    className:"risk-very-high"
+  };
+
+  if(score >= 60) return {
+    label:"High",
+    className:"risk-high"
+  };
+
+  if(score >= 40) return {
+    label:"Medium",
+    className:"risk-medium"
+  };
+
+  return {
+    label:"Low",
+    className:"risk-low"
+  };
+}
+
+/* =========================================================
+   NORMALISE APPLICABILITY
+   ========================================================= */
+
+function normaliseSystems(v){
+
+  let systems = safeArray(v.affected_systems);
+
+  return systems
+    .map(item => {
+
+      if(typeof item === "string"){
+
+        return {
+          family:item,
+          version:"",
+          status:"affected",
+          fixed:"",
+          package:"",
+          source:""
+        };
+      }
+
+      return {
+        family:item?.family || item?.ecosystem || "",
+        version:item?.version || "",
+        status:item?.status || "affected",
+        fixed:item?.fixed || "",
+        package:item?.package || item?.package_name || "",
+        source:item?.source || ""
+      };
+    })
+    .filter(item =>
+      item.family ||
+      item.version ||
+      item.package ||
+      item.fixed
+    );
+}
+
+function normaliseVersions(v,field){
+
+  return safeArray(v[field])
+    .map(x => String(x))
+    .filter(Boolean);
+}
+
+/* =========================================================
+   SOURCE MERGING
+   ========================================================= */
+
+function mergeUniqueArrays(a,b){
+
+  const values = [
+    ...safeArray(a),
+    ...safeArray(b)
+  ];
+
+  const seen = new Set();
+
+  return values.filter(item => {
+
+    const key = JSON.stringify(item);
+
+    if(seen.has(key)){
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
+function mergeSystems(a,b){
+
+  const values = [
+    ...normaliseSystems({affected_systems:a}),
+    ...normaliseSystems({affected_systems:b})
+  ];
+
+  const seen = new Set();
+
+  return values.filter(item => {
+
+    const key = [
+      item.family,
+      item.version,
+      item.status,
+      item.fixed,
+      item.package,
+      item.source
+    ].join("|");
+
+    if(seen.has(key)){
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
+function mergeVulnerabilities(rows){
+
+  const map = new Map();
+
+  rows.forEach(raw => {
+
+    if(!raw){
+      return;
+    }
+
+    const id = String(
+      raw.id ||
+      raw.cve ||
+      raw.CVE ||
+      raw.identifier ||
+      ""
+    ).trim();
+
+    if(!id){
+      return;
+    }
+
+    const current = map.get(id);
+
+    const incoming = {
+      ...raw,
+      id,
+      severity:normaliseSeverity(raw.severity),
+      cvss:numberOrNull(raw.cvss),
+      epss:numberOrNull(raw.epss),
+      kev:!!parseBoolean(raw.kev),
+      affected_systems:normaliseSystems(raw),
+      affected_versions:normaliseVersions(raw,"affected_versions"),
+      fixed_versions:normaliseVersions(raw,"fixed_versions"),
+      fix_available:parseBoolean(raw.fix_available)
+    };
+
+    if(!current){
+
+      incoming.risk_score = calculateRisk(incoming);
+
+      map.set(id,incoming);
+
+      return;
+    }
+
+    const currentSeverityWeight =
+      severityWeight(current.severity);
+
+    const incomingSeverityWeight =
+      severityWeight(incoming.severity);
+
+    if(incomingSeverityWeight > currentSeverityWeight){
+      current.severity = incoming.severity;
+    }
+
+    if(
+      incoming.cvss !== null &&
+      (
+        current.cvss === null ||
+        incoming.cvss > current.cvss
+      )
+    ){
+      current.cvss = incoming.cvss;
+    }
+
+    if(
+      incoming.epss !== null &&
+      (
+        current.epss === null ||
+        incoming.epss > current.epss
+      )
+    ){
+      current.epss = incoming.epss;
+    }
+
+    current.kev = current.kev || incoming.kev;
+
+    current.affected_systems =
+      mergeSystems(
+        current.affected_systems,
+        incoming.affected_systems
+      );
+
+    current.affected_versions =
+      mergeUniqueArrays(
+        current.affected_versions,
+        incoming.affected_versions
+      );
+
+    current.fixed_versions =
+      mergeUniqueArrays(
+        current.fixed_versions,
+        incoming.fixed_versions
+      );
+
+    if(incoming.fix_available === true){
+      current.fix_available = true;
+    }else if(
+      current.fix_available === null &&
+      incoming.fix_available === false
+    ){
+      current.fix_available = false;
+    }
+
+    if(
+      !current.title &&
+      incoming.title
+    ){
+      current.title = incoming.title;
+    }
+
+    if(
+      !current.summary &&
+      incoming.summary
+    ){
+      current.summary = incoming.summary;
+    }
+
+    if(
+      !current.description &&
+      incoming.description
+    ){
+      current.description = incoming.description;
+    }
+
+    if(
+      !current.mitigation &&
+      incoming.mitigation
+    ){
+      current.mitigation = incoming.mitigation;
+    }
+
+    if(
+      !current.product &&
+      incoming.product
+    ){
+      current.product = incoming.product;
+    }
+
+    if(
+      !current.category &&
+      incoming.category
+    ){
+      current.category = incoming.category;
+    }
+
+    if(
+      !current.published &&
+      incoming.published
+    ){
+      current.published = incoming.published;
+    }
+
+    if(
+      !current.modified &&
+      incoming.modified
+    ){
+      current.modified = incoming.modified;
+    }
+
+    current.url = current.url || incoming.url;
+
+    current.sources = mergeUniqueArrays(
+      current.sources || [],
+      incoming.sources || (
+        raw.source ? [raw.source] : []
+      )
+    );
+
+    current.risk_score = calculateRisk(current);
+  });
+
+  return Array.from(map.values());
+}
+
+/* =========================================================
+   DEMO FALLBACK
+   ========================================================= */
+
+const DEMO_DATA = [
+
+  {
+    id:"CVE-2026-0001",
+    title:"Example Linux vulnerability",
+    product:"Linux",
+    category:"Linux",
+    severity:"High",
+    cvss:8.1,
+    epss:.71,
+    kev:false,
+    published:"2026-11-18",
+    summary:"Example fallback record shown only while vulnerability data is unavailable.",
+    mitigation:"Apply the vendor security update when available.",
+    affected_systems:[
+      {
+        family:"RHEL",
+        version:"9",
+        status:"affected",
+        fixed:"RHSA-2026:0001",
+        package:"example-package",
+        source:"Red Hat"
+      }
+    ],
+    affected_versions:["RHEL 9"],
+    fixed_versions:["RHEL 9: RHSA-2026:0001"],
+    fix_available:true,
+    source:"Demo"
+  },
+
+  {
+    id:"CVE-2026-0002",
+    title:"Example Kubernetes vulnerability",
+    product:"Kubernetes",
+    category:"Kubernetes",
+    severity:"Critical",
+    cvss:9.8,
+    epss:.93,
+    kev:true,
+    published:"2026-11-17",
+    summary:"Example Kubernetes record shown only as fallback data.",
+    mitigation:"Upgrade to the fixed Kubernetes release.",
+    affected_systems:[
+      {
+        family:"Kubernetes",
+        version:"1.31",
+        status:"affected",
+        fixed:"1.31.x",
+        package:"kube-apiserver",
+        source:"Kubernetes"
+      }
+    ],
+    affected_versions:["Kubernetes 1.31"],
+    fixed_versions:["Kubernetes 1.31.x"],
+    fix_available:true,
+    source:"Demo"
+  }
+
+];
+
+/* =========================================================
+   STACK
+   ========================================================= */
+
+function getStack(){
+
+  try{
+
+    const saved =
+      JSON.parse(
+        localStorage.getItem(STACK_KEY) || "null"
+      );
+
+    if(Array.isArray(saved) && saved.length){
+      return saved;
+    }
+
+  }catch(e){}
+
+  return DEFAULT_STACK;
+}
+
+function saveStack(stack){
+
+  try{
+    localStorage.setItem(
+      STACK_KEY,
+      JSON.stringify(stack)
+    );
+  }catch(e){}
+}
+
+function itemMatchesStack(v){
+
+  const stack = getStack()
+    .map(x => String(x).toLowerCase());
+
+  const values = [];
+
+  values.push(v.product || "");
+  values.push(v.category || "");
+
+  normaliseVersions(v,"affected_versions")
+    .forEach(x => values.push(x));
+
+  normaliseVersions(v,"fixed_versions")
+    .forEach(x => values.push(x));
+
+  normaliseSystems(v)
+    .forEach(system => {
+
+      values.push(system.family);
+      values.push(system.version);
+      values.push(system.package);
+    });
+
+  const searchable = values
+    .join(" ")
+    .toLowerCase();
+
+  return stack.some(item =>
+    searchable.includes(item)
+  );
+}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+function searchable(v){
+
+  const systems = normaliseSystems(v)
+    .map(x => [
+      x.family,
+      x.version,
+      x.status,
+      x.fixed,
+      x.package,
+      x.source
+    ].join(" "))
+    .join(" ");
+
+  return [
+    v.id,
+    v.title,
+    v.product,
+    v.category,
+    v.summary,
+    v.description,
+    v.mitigation,
+    ...normaliseVersions(v,"affected_versions"),
+    ...normaliseVersions(v,"fixed_versions"),
+    systems
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+/* =========================================================
+   FILTERING
+   ========================================================= */
+
+function applyFilters(){
+
+  const search =
+    document.getElementById("search")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const severity =
+    document.getElementById("severity").value;
+
+  const category =
+    document.getElementById("category").value;
+
+  const risk =
+    document.getElementById("risk").value;
+
+  const sort =
+    document.getElementById("sort").value;
+
+  const kevOnly =
+    document.getElementById("kevOnly").checked;
+
+  const fixedOnly =
+    document.getElementById("fixedOnly").checked;
+
+  const stackOnly =
+    document.getElementById("stackOnly").checked;
+
+  filtered = vulnerabilities.filter(v => {
+
+    if(search && !searchable(v).includes(search)){
+      return false;
+    }
+
+    if(
+      severity &&
+      normaliseSeverity(v.severity) !== severity
+    ){
+      return false;
+    }
+
+    if(
+      category &&
+      String(v.category || "") !== category
+    ){
+      return false;
+    }
+
+    if(kevOnly && !v.kev){
+      return false;
+    }
+
+    if(fixedOnly && v.fix_available !== true){
+      return false;
+    }
+
+    if(stackOnly && !itemMatchesStack(v)){
+      return false;
+    }
+
+    const score = calculateRisk(v);
+
+    if(risk){
+
+      if(risk === "critical" && score < 95){
+        return false;
+      }
+
+      if(risk === "very-high" && score < 80){
+        return false;
+      }
+
+      if(risk === "high" && score < 60){
+        return false;
+      }
+
+      if(risk === "medium" && (
+        score < 40 || score >= 60
+      )){
+        return false;
+      }
+
+      if(risk === "low" && score >= 40){
+        return false;
+      }
+    }
+
+    if(state.threatView){
+
+      if(!v.kev && calculateRisk(v) < 60){
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  filtered.sort((a,b) => {
+
+    switch(sort){
+
+      case "published":
+        return String(b.published || "")
+          .localeCompare(String(a.published || ""));
+
+      case "cvss":
+        return (
+          (b.cvss ?? -1) -
+          (a.cvss ?? -1)
+        );
+
+      case "epss":
+        return (
+          (epssAsDecimal(b.epss) ?? -1) -
+          (epssAsDecimal(a.epss) ?? -1)
+        );
+
+      case "cve":
+        return String(a.id)
+          .localeCompare(String(b.id));
+
+      case "risk":
+      default:
+        return (
+          calculateRisk(b) -
+          calculateRisk(a)
+        );
+    }
+  });
+
+  renderTable();
+}
+
+/* =========================================================
+   TABLE RENDER
+   ========================================================= */
+
+function severityBadge(severity){
+
+  const s = normaliseSeverity(severity);
+
+  const cls = {
+    Critical:"badge-critical",
+    High:"badge-high",
+    Medium:"badge-medium",
+    Low:"badge-low"
+  }[s] || "badge-low";
+
+  return `
+    <span class="badge ${cls}">
+      ${escapeHtml(s)}
+    </span>
+  `;
+}
+
+function fixBadge(v){
+
+  if(v.fix_available === true){
+
+    return `
+      <span class="badge badge-fixed">
+        Yes
+      </span>
+    `;
+  }
+
+  if(v.fix_available === false){
+
+    return `
+      <span class="badge badge-no">
+        No
+      </span>
+    `;
+  }
+
+  return `
+    <span class="badge badge-unknown">
+      Not specified
+    </span>
+  `;
+}
+
+function renderTable(){
+
+  const body =
+    document.getElementById("vulnerabilityBody");
+
+  const table =
+    document.getElementById("vulnerabilityTable");
+
+  const loading =
+    document.getElementById("loading");
+
+  const empty =
+    document.getElementById("empty");
+
+  const resultCount =
+    document.getElementById("resultCount");
+
+  loading.hidden = true;
+  table.hidden = false;
+
+  body.innerHTML = "";
+
+  resultCount.textContent =
+    `${filtered.length} result${filtered.length === 1 ? "" : "s"}`;
+
+  if(!filtered.length){
+
+    table.hidden = true;
+    empty.hidden = false;
+
+    return;
+  }
+
+  empty.hidden = true;
+
+  filtered.forEach(v => {
+
+    const score = calculateRisk(v);
+    const level = riskLevel(score);
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+
+      <td>
+        <span class="cve">
+          ${escapeHtml(v.id)}
+        </span>
+      </td>
+
+      <td class="title-cell">
+
+        <div class="title-main">
+          ${escapeHtml(
+            v.title ||
+            v.summary ||
+            v.description ||
+            "Vulnerability"
+          )}
+        </div>
+
+        <div class="title-sub">
+          ${escapeHtml(v.product || "—")}
+        </div>
+
+      </td>
+
+      <td>
+        ${escapeHtml(v.category || "—")}
+      </td>
+
+      <td>
+        ${severityBadge(v.severity)}
+      </td>
+
+      <td class="mono">
+        ${v.cvss !== null && v.cvss !== undefined
+          ? escapeHtml(v.cvss)
+          : "—"}
+      </td>
+
+      <td class="mono">
+        ${formatEpss(v.epss)}
+      </td>
+
+      <td>
+        <span class="risk ${level.className}">
+          ${score}
+        </span>
+        <span style="color:var(--muted);font-size:10px;">
+          ${escapeHtml(level.label)}
+        </span>
+      </td>
+
+      <td>
+        ${
+          v.kev
+            ? '<span class="kev">Yes</span>'
+            : '<span class="not-kev">No</span>'
+        }
+      </td>
+
+      <td>
+        ${fixBadge(v)}
+      </td>
+
+      <td>
+        ${formatDate(v.published)}
+      </td>
+
+    `;
+
+    tr.style.cursor = "pointer";
+
+    tr.addEventListener("click",() => {
+      showDetail(v);
+    });
+
+    body.appendChild(tr);
+  });
+}
+
+/* =========================================================
+   DETAIL VIEW
+   ========================================================= */
+
+function showDetail(v){
+
+  selectedId = v.id;
+
+  const panel =
+    document.getElementById("detailPanel");
+
+  const systems =
+    normaliseSystems(v);
+
+  const affectedVersions =
+    normaliseVersions(v,"affected_versions");
+
+  const fixedVersions =
+    normaliseVersions(v,"fixed_versions");
+
+  const score = calculateRisk(v);
+  const level = riskLevel(score);
+
+  let applicabilityHtml = "";
+
+  if(systems.length){
+
+    applicabilityHtml = `
+
+      <div class="applicability">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Family</th>
+              <th>Version</th>
+              <th>Status</th>
+              <th>Package</th>
+              <th>Fixed</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            ${systems.map(system => `
+
+              <tr>
+
+                <td>
+                  ${escapeHtml(system.family || "—")}
+                </td>
+
+                <td>
+                  ${escapeHtml(system.version || "—")}
+                </td>
+
+                <td>
+                  ${escapeHtml(system.status || "affected")}
+                </td>
+
+                <td class="mono">
+                  ${escapeHtml(system.package || "—")}
+                </td>
+
+                <td>
+                  ${
+                    system.fixed
+                      ? `<span class="badge badge-fixed">
+                           ${escapeHtml(system.fixed)}
+                         </span>`
+                      : `<span class="specified-no">
+                           Not specified
+                         </span>`
+                  }
+                </td>
+
+                <td>
+                  ${escapeHtml(system.source || "—")}
+                </td>
+
+              </tr>
+
+            `).join("")}
+
+          </tbody>
+
+        </table>
+
+      </div>
+    `;
+
+  }else{
+
+    applicabilityHtml = `
+      <p class="specified-no">
+        Applicability not specified by source.
+      </p>
+    `;
+  }
+
+  const description =
+    v.description ||
+    v.summary ||
+    "No description available.";
+
+  const sources =
+    safeArray(v.sources);
+
+  if(!sources.length && v.source){
+    sources.push(v.source);
+  }
+
+  panel.innerHTML = `
+
+    <div class="detail-head">
+
+      <div>
+
+        <div class="detail-id">
+          ${escapeHtml(v.id)}
+        </div>
+
+        <h2>
+          ${escapeHtml(
+            v.title ||
+            v.summary ||
+            "Vulnerability"
+          )}
+        </h2>
+
+      </div>
+
+      <button
+        class="close-detail"
+        id="closeDetail"
+        aria-label="Close details"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="metrics">
+
+      <div class="metric">
+        <div class="metric-label">Severity</div>
+        <div class="metric-value">
+          ${severityBadge(v.severity)}
+        </div>
+      </div>
+
+      <div class="metric">
+        <div class="metric-label">CVSS</div>
+        <div class="metric-value">
+          ${v.cvss ?? "—"}
+        </div>
+      </div>
+
+      <div class="metric">
+        <div class="metric-label">EPSS</div>
+        <div class="metric-value">
+          ${formatEpss(v.epss)}
+        </div>
+      </div>
+
+      <div class="metric">
+        <div class="metric-label">CISA KEV</div>
+        <div class="metric-value">
+          ${v.kev ? "Yes" : "No"}
+        </div>
+      </div>
+
+      <div class="metric">
+        <div class="metric-label">Risk</div>
+        <div class="metric-value ${level.className}">
+          ${score} / 100
+        </div>
+      </div>
+
+      <div class="metric">
+        <div class="metric-label">Fix</div>
+        <div class="metric-value">
+          ${
+            v.fix_available === true
+              ? "Available"
+              : v.fix_available === false
+                ? "No"
+                : "Not specified"
+          }
+        </div>
+      </div>
+
+    </div>
+
+    <div class="detail-grid">
+
+      <div>
+
+        <div class="detail-card">
+
+          <h3>Description</h3>
+
+          <p>
+            ${escapeHtml(description)}
+          </p>
+
+        </div>
+
+        <div class="detail-card">
+
+          <h3>Affected systems</h3>
+
+          ${applicabilityHtml}
+
+        </div>
+
+        <div class="detail-card">
+
+          <h3>Affected versions</h3>
+
+          ${
+            affectedVersions.length
+              ? `
+                <ul class="detail-list">
+                  ${affectedVersions.map(x =>
+                    `<li>${escapeHtml(x)}</li>`
+                  ).join("")}
+                </ul>
+              `
+              : `
+                <p class="specified-no">
+                  Applicability not specified by source.
+                </p>
+              `
+          }
+
+        </div>
+
+        <div class="detail-card">
+
+          <h3>Fixed versions</h3>
+
+          ${
+            fixedVersions.length
+              ? `
+                <ul class="detail-list">
+                  ${fixedVersions.map(x =>
+                    `<li>${escapeHtml(x)}</li>`
+                  ).join("")}
+                </ul>
+              `
+              : `
+                <p class="specified-no">
+                  No fixed version specified by source.
+                </p>
+              `
+          }
+
+        </div>
+
+      </div>
+
+      <div>
+
+        <div class="detail-card">
+
+          <h3>Mitigation</h3>
+
+          <p>
+            ${escapeHtml(
+              v.mitigation ||
+              "No mitigation information has been provided by the source."
+            )}
+          </p>
+
+        </div>
+
+        <div class="detail-card">
+
+          <h3>Timeline</h3>
+
+          <ul class="detail-list">
+
+            <li>
+              Published:
+              <strong>
+                ${formatDate(v.published)}
+              </strong>
+            </li>
+
+            <li>
+              Modified:
+              <strong>
+                ${formatDate(v.modified)}
+              </strong>
+            </li>
+
+          </ul>
+
+        </div>
+
+        <div class="detail-card">
+
+          <h3>Sources</h3>
+
+          ${
+            sources.length
+              ? `
+                <ul class="detail-list">
+                  ${sources.map(source =>
+                    `<li>${escapeHtml(source)}</li>`
+                  ).join("")}
+                </ul>
+              `
+              : `
+                <p class="specified-no">
+                  Source not specified.
+                </p>
+              `
+          }
+
+          ${
+            v.url
+              ? `
+                <div style="margin-top:12px;">
+                  <a
+                    class="inline-link"
+                    href="${escapeHtml(v.url)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View authoritative advisory →
+                  </a>
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+
+  panel.classList.add("show");
+
+  document
+    .getElementById("closeDetail")
+    .addEventListener("click",() => {
+
+      panel.classList.remove("show");
+      selectedId = null;
+    });
+
+  panel.scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
+}
+
+/* =========================================================
+   CATEGORY NAVIGATION
+   ========================================================= */
+
+function setCategory(category){
+
+  document.getElementById("category").value =
+    category;
+
+  document
+    .querySelectorAll(".category")
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.category === category
+      );
+    });
+
+  applyFilters();
+
+  document
+    .getElementById("vulnerabilities")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
+}
+
+document
+  .querySelectorAll(".category")
+  .forEach(button => {
+
+    button.addEventListener("click",() => {
+
+      setCategory(
+        button.dataset.category || ""
+      );
+    });
+  });
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+function activateNav(name){
+
+  document
+    .querySelectorAll("[data-nav]")
+    .forEach(link => {
+
+      link.classList.toggle(
+        "active",
+        link.dataset.nav === name
+      );
+    });
+}
+
+function navigateFromHash(){
+
+  const hash =
+    location.hash.replace("#","") || "overview";
+
+  switch(hash){
+
+    case "linux":
+
+      setCategorySilent([
+        "Linux",
+        "Kernel"
+      ]);
+
+      activateNav("linux");
+
+      break;
+
+    case "kubernetes":
+
+      setCategorySilent([
+        "Kubernetes"
+      ]);
+
+      activateNav("kubernetes");
+
+      break;
+
+    case "containers":
+
+      setCategorySilent([
+        "Containers"
+      ]);
+
+      activateNav("containers");
+
+      break;
+
+    case "sap":
+
+      setCategorySilent([
+        "SAP"
+      ]);
+
+      activateNav("sap");
+
+      break;
+
+    case "threat-intelligence":
+
+      setCategorySilent([]);
+      state.threatView = true;
+
+      document.getElementById("kevOnly").checked = true;
+
+      activateNav("threat-intelligence");
+
+      applyFilters();
+
+      break;
+
+    case "vulnerabilities":
+
+      setCategorySilent([]);
+      state.threatView = false;
+
+      activateNav("vulnerabilities");
+
+      break;
+
+    case "sources":
+
+      setCategorySilent([]);
+      state.threatView = false;
+
+      activateNav("sources");
+
+      break;
+
+    case "overview":
+    default:
+
+      setCategorySilent([]);
+      state.threatView = false;
+
+      activateNav("overview");
+
+      break;
+  }
+
+  applyFilters();
+}
+
+function setCategorySilent(categories){
+
+  state.threatView = false;
+
+  const categorySelect =
+    document.getElementById("category");
+
+  if(categories.length === 1){
+
+    categorySelect.value = categories[0];
+
+  }else{
+
+    categorySelect.value = "";
+  }
+
+  document
+    .querySelectorAll(".category")
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        categories.length === 0 &&
+        button.dataset.category === ""
+      );
+    });
+}
+
+window.addEventListener(
+  "hashchange",
+  navigateFromHash
 );
 
-});
-}
+/* =========================================================
+   THREAT VIEW
+   ========================================================= */
 
-const pri=d=>
-(d.k?100:0)+
-(d.e||0)*50+
-(d.v||0);
+document
+  .getElementById("threatViewBtn")
+  .addEventListener("click",() => {
 
-const plab=d=>
-d.k||(d.e||0)>=.5
-?["Urgent","P1"]
-:(d.s==="Critical"||d.s==="High")
-?["Plan","P2"]
-:["Routine","P3"];
+    state.threatView = true;
 
-function prods(){
+    document.getElementById("kevOnly").checked = true;
+    document.getElementById("risk").value = "high";
 
-const n={};
+    location.hash = "threat-intelligence";
 
-D.forEach(d=>{
-n[d.p]=(n[d.p]||0)+1;
-});
+    applyFilters();
+  });
 
-$("prd").innerHTML=
-'<option value="">All components</option>'+
-Object.keys(n)
-.sort((a,b)=>n[b]-n[a])
-.slice(0,80)
-.sort()
-.map(p=>`<option>${e(p)}</option>`)
-.join("");
-}
+/* =========================================================
+   FILTER EVENTS
+   ========================================================= */
 
-function fromHash(){
-
-const h=decodeURIComponent(
-location.hash.slice(1)
-).toLowerCase();
-
-if(h==="kev")
-$("kev").checked=true;
-
-else{
-
-const c=cats.find(
-x=>x.toLowerCase()===h
-);
-
-if(c)cat=c;
-
-}
-}
-
-try{
-$("stack").value=
-localStorage.getItem("stack")||"";
-}catch(_){}
-
-function render(keep){
-
-if(keep!==true)
-page=1;
-
-const q=$("q").value.toLowerCase();
-const s=$("sev").value;
-const k=$("kev").checked;
-const p=$("prd").value;
-const ag=+$("age").value;
-const mine=$("mine").checked;
-const fx=$("fx").value;
-
-const st=$("stack").value
-.toLowerCase()
-.split(",")
-.map(x=>x.trim())
-.filter(Boolean);
-
-const mx=D.reduce(
-(a,d)=>d.d>a?d.d:a,
-"0"
-);
-
-const lim=ag
-?new Date(
-new Date(mx)-ag*864e5
-)
-.toISOString()
-.slice(0,10)
-:"";
-
-const r=D.filter(d=>
-
-(cat==="All"||d.c===cat)&&
-(!s||d.s===s)&&
-(!k||d.k)&&
-(!fx||fxs(d)===fx)&&
-(!p||d.p===p)&&
-(!lim||d.d>=lim)&&
-
-(
-!mine||
-!st.length||
-st.some(x=>
-(
-d.p+" "+
-d.t+" "+
-(d.affected_versions||[]).join(" ")+" "+
-(d.affected_systems||[])
-.map(z=>z.family+" "+z.version+" "+z.package)
-.join(" ")
-)
-.toLowerCase()
-.includes(x)
-)
-)&&
-
-(
-!q||
-(
-d.id+
-d.t+
-d.p+
-d.c+
-JSON.stringify(d.affected_systems||[])+
-JSON.stringify(d.affected_versions||[])+
-JSON.stringify(d.fixed_versions||[])
-)
-.toLowerCase()
-.includes(q)
-)
-
-);
-
-const so=$("srt").value;
-
-r.sort(
-sk
-?(a,b)=>CMP[sk](a,b)*sd||b.d.localeCompare(a.d)
-:
-so==="new"
-?(a,b)=>b.d.localeCompare(a.d)||pri(b)-pri(a)
-:
-so==="cvss"
-?(a,b)=>(b.v||0)-(a.v||0)
-:
-(a,b)=>pri(b)-pri(a)||b.d.localeCompare(a.d)
-);
-
-const sh=r.slice(
-0,
-page*PS
-);
-
-$("cnt").textContent=
-"Showing "+sh.length+" of "+r.length;
-
-$("more").style.display=
-sh.length<r.length
-?""
-:"";
-
-$("rows").innerHTML=
-sh.map(d=>{
-
-const pl=plab(d);
-
-return `
-
-<tr
-class="r"
-tabindex="0"
-role="button"
-aria-expanded="${open===d.id}"
-data-i="${e(d.id)}"
->
-
-<td class="id" data-l="CVE">
-${e(d.id)}
-</td>
-
-<td data-l="Vulnerability">
-
-${e(d.t)}
-
-${d.k
-?'<span class="pill KEV">KEV</span>'
-:""}
-
-${fixBadge(d)}
-
-</td>
-
-<td class="muted" data-l="Component">
-
-${e(d.p)}
-
-<br>
-
-<small>${e(d.c)}</small>
-
-</td>
-
-<td data-l="Severity">
-
-<span class="pill ${e(d.s)}">
-${e(d.s)}
-</span>
-
-</td>
-
-<td data-l="CVSS">
-${d.v==null?"—":Number(d.v).toFixed(1)}
-</td>
-
-<td data-l="Priority">
-
-<span class="pill ${pl[1]}">
-${pl[0]}
-</span>
-
-</td>
-
-<td class="muted" data-l="Published">
-${e(d.d)}
-</td>
-
-</tr>
-
-${
-open===d.id
-?
-
-`
-<tr class="det">
-
-<td></td>
-
-<td colspan="6">
-
-<div>${e(d.x)}</div>
-
-${
-d.e!=null
-?
-`<div style="margin-top:8px"><b>EPSS:</b> ${(d.e*100).toFixed(1)}%</div>`
-:""
-}
-
-${
-d.fix_available!==undefined
-?
-`<div style="margin-top:8px"><b>Fix available:</b> ${d.fix_available?"Yes":"No"}</div>`
-:""
-}
-
-${applicabilityHtml(d)}
-
-${
-d.ss&&d.ss.size>1
-?
-`<div style="margin-top:8px"><b>Seen in:</b> ${[...d.ss].map(z=>e(z)).join(", ")}.</div>`
-:""
-}
-
-<div style="margin-top:10px">
-
-<a
-href="${e(d.u||("https://nvd.nist.gov/vuln/detail/"+d.id))}"
-target="_blank"
-rel="noopener"
->
-View source
-</a>
-
-</div>
-
-${mitHtml(d)}
-
-</td>
-
-</tr>
-`
-:""
-
-}
-
-`
-}).join("")
-||
-`
-<tr>
-<td colspan="7" class="muted">
-No results match your filters.
-</td>
-</tr>
-`;
-
-document.querySelectorAll("tr.r")
-.forEach(t=>{
-
-const f=()=>{
-
-open=
-open===t.dataset.i
-?null
-:t.dataset.i;
-
-render(true);
-
-};
-
-t.onclick=f;
-
-t.onkeydown=ev=>{
-
-if(ev.key==="Enter"||ev.key===" "){
-
-ev.preventDefault();
-
-f();
-
-}
-
-};
-
-});
-
-}
-
-$("more").onclick=()=>{
-page++;
-render(true);
-};
-
-$("csv").onclick=()=>{
-
-const cl=v=>{
-
-v=String(v??"");
-
-if(/^[=+\-@]/.test(v))
-v="'"+v;
-
-return '"'+v.replace(/"/g,'""')+'"';
-
-};
-
-const t=[
 [
-"id",
-"title",
-"component",
-"category",
-"severity",
-"cvss",
-"kev",
-"published",
-"affected_versions",
-"fixed_versions",
-"fix_available",
-"url"
-],
+  "search",
+  "severity",
+  "category",
+  "risk",
+  "sort",
+  "kevOnly",
+  "fixedOnly",
+  "stackOnly"
+].forEach(id => {
 
-...D.map(d=>[
-d.id,
-d.t,
-d.p,
-d.c,
-d.s,
-d.v??"",
-d.k,
-d.d,
-(d.affected_versions||[]).join("; "),
-(d.fixed_versions||[]).join("; "),
-d.fix_available?"Yes":"No",
-d.u||""
-])
+  const element =
+    document.getElementById(id);
 
-]
-.map(r=>r.map(cl).join(","))
-.join("\n");
+  element.addEventListener(
+    "input",
+    () => {
 
-const a=document.createElement("a");
+      if(id === "category"){
 
-a.href=
-URL.createObjectURL(
-new Blob(
-[t],
-{type:"text/csv"}
-)
-);
+        const value = element.value;
 
-a.download="vulnerabilities.csv";
+        document
+          .querySelectorAll(".category")
+          .forEach(button => {
 
-a.click();
+            button.classList.toggle(
+              "active",
+              button.dataset.category === value
+            );
+          });
+      }
 
-};
+      applyFilters();
+    }
+  );
 
-$("q").oninput=render;
-$("sev").onchange=render;
-$("fx").onchange=render;
-$("kev").onchange=render;
+  element.addEventListener(
+    "change",
+    () => {
 
-["srt","prd","age","mine"]
-.forEach(i=>
-$(i).onchange=render
-);
+      if(id === "category"){
 
-$("stack").oninput=()=>{
+        const value = element.value;
 
-try{
-localStorage.setItem(
-"stack",
-$("stack").value
-);
-}catch(_){}
+        document
+          .querySelectorAll(".category")
+          .forEach(button => {
 
-render();
+            button.classList.toggle(
+              "active",
+              button.dataset.category === value
+            );
+          });
+      }
 
-};
-
-addEventListener(
-"hashchange",
-()=>{
-fromHash();
-tabs();
-render();
-}
-);
-
-$("srt").onchange=()=>{
-sk=null;
-heads();
-render();
-};
-
-document.querySelectorAll("th[data-k]")
-.forEach(h=>{
-
-const f=()=>{
-
-const k=h.dataset.k;
-
-if(sk===k)
-sd=-sd;
-
-else{
-sk=k;
-sd=DEF[k];
-}
-
-heads();
-render();
-
-};
-
-h.onclick=f;
-
-h.onkeydown=ev=>{
-
-if(ev.key==="Enter"||ev.key===" "){
-
-ev.preventDefault();
-f();
-
-}
-
-};
-
+      applyFilters();
+    }
+  );
 });
 
-prods();
-fromHash();
-stats();
-tabs();
-render();
-renderSrc({},false);
+/* =========================================================
+   RESET
+   ========================================================= */
 
-$("lg").innerHTML=
-"<span>Fix status:</span>"+
-Object.values(FX)
-.map(f=>
-`<span class="fx ${f[1]}">${f[0]}</span>`
-)
-.join("");
+document
+  .getElementById("resetBtn")
+  .addEventListener("click",() => {
 
-const SEV={
-"Crítica":"Critical",
-"Alta":"High",
-"Média":"Medium",
-"Baixa":"Low"
-};
+    document.getElementById("search").value = "";
+    document.getElementById("severity").value = "";
+    document.getElementById("category").value = "";
+    document.getElementById("risk").value = "";
+    document.getElementById("sort").value = "risk";
 
-const CAT={
-"Contentores":"Containers"
-};
+    document.getElementById("kevOnly").checked = false;
+    document.getElementById("fixedOnly").checked = false;
+    document.getElementById("stackOnly").checked = false;
 
-fetch("vulns.json")
-.then(r=>
-r.ok
-?r.json()
-:Promise.reject()
-)
-.then(j=>{
+    state.threatView = false;
 
-const m=new Map();
-const cnt={};
+    document
+      .querySelectorAll(".category")
+      .forEach(button => {
 
-j.forEach(x=>{
+        button.classList.toggle(
+          "active",
+          button.dataset.category === ""
+        );
+      });
 
-const k=S.find(
-z=>(x.source||"").startsWith(z.key)
-);
+    applyFilters();
+  });
 
-if(k)
-cnt[k.key]=(cnt[k.key]||0)+1;
+/* =========================================================
+   CSV EXPORT
+   ========================================================= */
 
-});
+function csvEscape(value){
 
-j.forEach(x=>{
+  let text = String(value ?? "");
 
-const s=
-SEV[x.severity]||
-x.severity||
-"Medium";
+  /*
+    Prevent spreadsheet formula injection.
+  */
 
-const o=m.get(x.id);
+  if(
+    /^[=+\-@]/.test(text)
+  ){
+    text = "'" + text;
+  }
 
-if(o){
+  text = text.replace(/"/g,'""');
 
-o.k=o.k||x.kev;
-
-o.v=o.v??x.cvss;
-
-o.ss.add(x.source);
-
-o.e=o.e??x.epss;
-
-if(!o.m&&x.mitigation)
-o.m={
-s:"verify",
-st:[
-["Action",x.mitigation]
-]
-};
-
-if(O[s]<O[o.s])
-o.s=s;
-
-if(
-Array.isArray(x.affected_systems)
-&&
-x.affected_systems.length
-){
-
-o.affected_systems=[
-...(o.affected_systems||[]),
-...x.affected_systems
-];
-
+  return `"${text}"`;
 }
 
-if(
-Array.isArray(x.affected_versions)
-&&
-x.affected_versions.length
-){
+function exportCsv(){
 
-o.affected_versions=[
-...(o.affected_versions||[]),
-...x.affected_versions
-];
+  const headers = [
+    "id",
+    "title",
+    "component",
+    "category",
+    "severity",
+    "cvss",
+    "epss",
+    "risk_score",
+    "kev",
+    "published",
+    "fix_available",
+    "affected_versions",
+    "fixed_versions",
+    "url"
+  ];
 
+  const rows = [
+    headers.join(",")
+  ];
+
+  filtered.forEach(v => {
+
+    rows.push([
+      v.id,
+      v.title,
+      v.product,
+      v.category,
+      v.severity,
+      v.cvss ?? "",
+      v.epss ?? "",
+      calculateRisk(v),
+      v.kev ? "Yes" : "No",
+      v.published || "",
+      v.fix_available === true
+        ? "Yes"
+        : v.fix_available === false
+          ? "No"
+          : "Not specified",
+      normaliseVersions(
+        v,
+        "affected_versions"
+      ).join(" | "),
+      normaliseVersions(
+        v,
+        "fixed_versions"
+      ).join(" | "),
+      v.url || ""
+    ].map(csvEscape).join(","));
+  });
+
+  const blob =
+    new Blob(
+      [
+        "\uFEFF" +
+        rows.join("\n")
+      ],
+      {
+        type:"text/csv;charset=utf-8;"
+      }
+    );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const link =
+    document.createElement("a");
+
+  link.href = url;
+  link.download =
+    `vulnerability-intelligence-${new Date()
+      .toISOString()
+      .slice(0,10)}.csv`;
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+
+  URL.revokeObjectURL(url);
 }
 
-if(
-Array.isArray(x.fixed_versions)
-&&
-x.fixed_versions.length
-){
+document
+  .getElementById("csvBtn")
+  .addEventListener(
+    "click",
+    exportCsv
+  );
 
-o.fixed_versions=[
-...(o.fixed_versions||[]),
-...x.fixed_versions
-];
+/* =========================================================
+   STATS
+   ========================================================= */
 
+function updateStats(){
+
+  const total =
+    vulnerabilities.length;
+
+  const critical =
+    vulnerabilities.filter(v =>
+      normaliseSeverity(v.severity) === "Critical"
+    ).length;
+
+  const high =
+    vulnerabilities.filter(v =>
+      calculateRisk(v) >= 80
+    ).length;
+
+  const kev =
+    vulnerabilities.filter(v =>
+      v.kev
+    ).length;
+
+  const fixed =
+    vulnerabilities.filter(v =>
+      v.fix_available === true
+    ).length;
+
+  document.getElementById("statTotal")
+    .textContent = total;
+
+  document.getElementById("statCritical")
+    .textContent = critical;
+
+  document.getElementById("statHigh")
+    .textContent = high;
+
+  document.getElementById("statKev")
+    .textContent = kev;
+
+  document.getElementById("statFixed")
+    .textContent = fixed;
 }
 
-if(x.fix_available)
-o.fix_available=true;
+/* =========================================================
+   STATUS
+   ========================================================= */
 
-return;
+async function loadStatus(){
 
+  try{
+
+    const response =
+      await fetch(
+        STATUS_URL + "?t=" + Date.now(),
+        {
+          cache:"no-store"
+        }
+      );
+
+    if(!response.ok){
+      throw new Error("Status unavailable");
+    }
+
+    const status =
+      await response.json();
+
+    const timestamp =
+      status.updated_at ||
+      status.last_updated ||
+      status.timestamp ||
+      status.updated;
+
+    if(timestamp){
+
+      document.getElementById(
+        "lastUpdated"
+      ).textContent =
+        formatDateTime(timestamp);
+    }
+
+  }catch(error){
+
+    document.getElementById(
+      "lastUpdated"
+    ).textContent =
+      "Unknown";
+  }
 }
 
-m.set(
-x.id,
-{
-id:x.id,
-t:x.title,
-p:x.product,
-c:CAT[x.category]||x.category,
-s:O[s]===undefined?"Medium":s,
-v:x.cvss,
-d:x.published,
-k:x.kev,
-x:x.summary,
-u:/^https?:\/\//i.test(x.url||"")
-?x.url
-:"",
-e:x.epss,
-ss:new Set([x.source]),
-m:x.mitigation
-?{
-s:"verify",
-st:[
-["Action",x.mitigation]
-]
+/* =========================================================
+   DATA LOAD
+   ========================================================= */
+
+async function loadData(){
+
+  let data = null;
+
+  try{
+
+    const response =
+      await fetch(
+        DATA_URL + "?t=" + Date.now(),
+        {
+          cache:"no-store"
+        }
+      );
+
+    if(!response.ok){
+      throw new Error(
+        `HTTP ${response.status}`
+      );
+    }
+
+    data =
+      await response.json();
+
+  }catch(error){
+
+    console.warn(
+      "Could not load vulns.json:",
+      error
+    );
+
+    data = DEMO_DATA;
+  }
+
+  /*
+    Accept either:
+
+    [
+      {...},
+      {...}
+    ]
+
+    or:
+
+    {
+      "vulnerabilities":[...]
+    }
+
+    or:
+
+    {
+      "data":[...]
+    }
+  */
+
+  let rows = [];
+
+  if(Array.isArray(data)){
+
+    rows = data;
+
+  }else if(
+    data &&
+    Array.isArray(data.vulnerabilities)
+  ){
+
+    rows = data.vulnerabilities;
+
+  }else if(
+    data &&
+    Array.isArray(data.data)
+  ){
+
+    rows = data.data;
+  }
+
+  if(!rows.length){
+
+    rows = DEMO_DATA;
+  }
+
+  vulnerabilities =
+    mergeVulnerabilities(rows);
+
+  /*
+    Ensure calculated fields exist.
+  */
+
+  vulnerabilities.forEach(v => {
+
+    v.risk_score =
+      calculateRisk(v);
+
+    v.kev =
+      !!parseBoolean(v.kev);
+
+    v.fix_available =
+      parseBoolean(v.fix_available);
+  });
+
+  updateStats();
+
+  applyFilters();
 }
-:null,
 
-affected_systems:
-Array.isArray(x.affected_systems)
-?x.affected_systems
-:[],
+/* =========================================================
+   INITIALISE
+   ========================================================= */
 
-affected_versions:
-Array.isArray(x.affected_versions)
-?x.affected_versions
-:[],
+(async function init(){
 
-fixed_versions:
-Array.isArray(x.fixed_versions)
-?x.fixed_versions
-:[],
+  await loadData();
 
-fix_available:
-x.fix_available===true
+  await loadStatus();
 
-}
-);
+  navigateFromHash();
 
-});
-
-m.forEach(d=>{
-
-const dedupe=(arr,keyFn)=>
-[...new Map(
-arr.map(x=>[
-keyFn(x),
-x
-])
-.values()
-];
-
-d.affected_systems=dedupe(
-d.affected_systems||[],
-x=>JSON.stringify(x)
-);
-
-d.affected_versions=[
-...new Set(d.affected_versions||[])
-];
-
-d.fixed_versions=[
-...new Set(d.fixed_versions||[])
-];
-
-});
-
-if(m.size){
-
-D=[...m.values()];
-
-prods();
-
-cats=[
-"All",
-...new Set(D.map(d=>d.c))
-];
-
-cat="All";
-
-fromHash();
-
-stats();
-tabs();
-render();
-
-$("demo").textContent=
-"Live data loaded from vulns.json.";
-
-CNT=cnt;
-
-renderSrc(cnt,true);
-
-}
-
-})
-.catch(()=>{});
-
-fetch("status.json")
-.then(r=>
-r.ok
-?r.json()
-:Promise.reject()
-)
-.then(j=>{
-
-ST=j;
-
-$("upd").textContent=
-"Last updated "+
-String(j.generated_at)
-.replace("T"," ")+
-" UTC · "+
-j.total+
-" records";
-
-renderSrc(CNT,true);
-
-})
-.catch(()=>{});
-
+})();
 </script>
 
 </body>
