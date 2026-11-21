@@ -71,6 +71,7 @@ h2{font-size:17px;margin:30px 0 4px}
 .chip{flex:none;min-width:86px;text-align:center;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:color-mix(in srgb,var(--cc) 16%,transparent);color:var(--cc)}
 .c-ok{--cc:var(--ok)}.c-wa{--cc:var(--warn)}.c-pu{--cc:var(--kev)}.c-in{--cc:var(--info)}.c-te{--cc:var(--accent2)}.c-no{--cc:var(--crit)}.c-un{--cc:var(--muted)}
 .lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-4px 0 12px;color:var(--muted);font-size:12px}.lg .fx{margin:0}
+th[data-k]{cursor:pointer;user-select:none;white-space:nowrap}th[data-k]:hover{color:var(--accent)}th[data-dir="1"]::after{content:" ▲";color:var(--accent)}th[data-dir="-1"]::after{content:" ▼";color:var(--accent)}
 .P1{color:var(--crit)}.P2{color:var(--high)}.P3{color:var(--muted)}
 .dot.bad{background:var(--crit);box-shadow:0 0 0 3px color-mix(in srgb,var(--crit) 25%,transparent)}.dot.off{background:var(--muted);box-shadow:0 0 0 3px color-mix(in srgb,var(--muted) 25%,transparent)}
 tr.r:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
@@ -103,7 +104,7 @@ tr.r:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 <div class="tabs" id="tabs"></div>
 <div class="lg" id="lg"></div>
 <div class="tbl"><table>
-<thead><tr><th>CVE</th><th>Vulnerability</th><th>Component</th><th>Severity</th><th>CVSS</th><th>Priority</th><th>Published</th></tr></thead>
+<thead><tr><th data-k="id" tabindex="0" role="button">CVE</th><th data-k="t" tabindex="0" role="button">Vulnerability</th><th data-k="p" tabindex="0" role="button">Component</th><th data-k="s" tabindex="0" role="button">Severity</th><th data-k="v" tabindex="0" role="button">CVSS</th><th data-k="pri" tabindex="0" role="button">Priority</th><th data-k="d" tabindex="0" role="button">Published</th></tr></thead>
 <tbody id="rows"></tbody></table></div>
 <div class="lg" style="margin:10px 0"><span id="cnt"></span><button class="tab" id="more" style="display:none">Load more</button></div>
 <h2>Data sources</h2>
@@ -163,7 +164,11 @@ $("stats").innerHTML=[["Tracked",D.length],["Critical",n(d=>d.s==="Critical")],[
 .map((a,i)=>`<div class="stat s${i}"><b>${a[1]}</b><span>${a[0]}</span></div>`).join("")}
 function tabs(){$("tabs").innerHTML=cats.map(c=>`<button class="tab ${c===cat?"on":""}" data-c="${c}">${c}</button>`).join("");
 document.querySelectorAll("#tabs .tab").forEach(b=>b.onclick=()=>{cat=b.dataset.c;try{history.replaceState(null,"",cat==="All"?location.pathname:"#"+cat.toLowerCase())}catch(_){}tabs();render()})}
-let ST=null,CNT={},page=1;const PS=25;
+let ST=null,CNT={},page=1,sk=null,sd=1;const PS=25;
+const cv=s=>{const m=/^CVE-(\d{4})-(\d+)$/.exec(s);return m?m[1]*1e8+(+m[2]):0};
+const CMP={id:(a,b)=>cv(a.id)-cv(b.id),t:(a,b)=>a.t.localeCompare(b.t),p:(a,b)=>a.p.localeCompare(b.p),s:(a,b)=>O[a.s]-O[b.s],v:(a,b)=>(a.v||0)-(b.v||0),pri:(a,b)=>pri(a)-pri(b),d:(a,b)=>a.d.localeCompare(b.d)};
+const DEF={id:-1,t:1,p:1,s:1,v:-1,pri:-1,d:-1};
+function heads(){document.querySelectorAll("th[data-k]").forEach(h=>{const on=h.dataset.k===sk;h.dataset.dir=on?sd:"";h.setAttribute("aria-sort",on?(sd>0?"ascending":"descending"):"none")})}
 const pri=d=>(d.k?100:0)+(d.e||0)*50+(d.v||0);
 const plab=d=>d.k||(d.e||0)>=.5?["Urgent","P1"]:(d.s==="Critical"||d.s==="High")?["Plan","P2"]:["Routine","P3"];
 function prods(){const n={};D.forEach(d=>n[d.p]=(n[d.p]||0)+1);$("prd").innerHTML='<option value="">All components</option>'+Object.keys(n).sort((a,b)=>n[b]-n[a]).slice(0,80).sort().map(p=>`<option>${e(p)}</option>`).join("")}
@@ -175,7 +180,7 @@ const st=$("stack").value.toLowerCase().split(",").map(x=>x.trim()).filter(Boole
 const mx=D.reduce((a,d)=>d.d>a?d.d:a,"0"),lim=ag?new Date(new Date(mx)-ag*864e5).toISOString().slice(0,10):"";
 const r=D.filter(d=>(cat==="All"||d.c===cat)&&(!s||d.s===s)&&(!k||d.k)&&(!fx||fxs(d)===fx)&&(!p||d.p===p)&&(!lim||d.d>=lim)&&(!mine||!st.length||st.some(x=>(d.p+" "+d.t).toLowerCase().includes(x)))&&(!q||(d.id+d.t+d.p+d.c).toLowerCase().includes(q)));
 const so=$("srt").value;
-r.sort(so==="new"?(a,b)=>b.d.localeCompare(a.d)||pri(b)-pri(a):so==="cvss"?(a,b)=>(b.v||0)-(a.v||0):(a,b)=>pri(b)-pri(a)||b.d.localeCompare(a.d));
+r.sort(sk?(a,b)=>CMP[sk](a,b)*sd||b.d.localeCompare(a.d):so==="new"?(a,b)=>b.d.localeCompare(a.d)||pri(b)-pri(a):so==="cvss"?(a,b)=>(b.v||0)-(a.v||0):(a,b)=>pri(b)-pri(a)||b.d.localeCompare(a.d));
 const sh=r.slice(0,page*PS);$("cnt").textContent="Showing "+sh.length+" of "+r.length;$("more").style.display=sh.length<r.length?"":"none";
 $("rows").innerHTML=sh.map(d=>{const pl=plab(d);return `<tr class="r" tabindex="0" role="button" aria-expanded="${open===d.id}" data-i="${e(d.id)}"><td class="id" data-l="CVE">${e(d.id)}</td><td data-l="Vulnerability">${e(d.t)} ${d.k?'<span class="pill KEV">KEV</span>':""}${fixBadge(d)}</td><td class="muted" data-l="Component">${e(d.p)}<br><small>${e(d.c)}</small></td><td data-l="Severity"><span class="pill ${d.s}">${d.s}</span></td><td data-l="CVSS">${d.v==null?"\u2014":d.v.toFixed(1)}</td><td data-l="Priority"><span class="pill ${pl[1]}">${pl[0]}</span></td><td class="muted" data-l="Published">${e(d.d)}</td></tr>`
 +(open===d.id?`<tr class="det"><td></td><td colspan="6">${e(d.x)}${d.a?` <b>Affected versions:</b> ${e(d.a)}.`:""}${d.e!=null?` <b>EPSS:</b> ${(d.e*100).toFixed(1)}%.`:""}${d.ss&&d.ss.size>1?` <b>Seen in:</b> ${[...d.ss].map(z=>e(z)).join(", ")}.`:""} <a href="${e(d.u||("https://nvd.nist.gov/vuln/detail/"+d.id))}" target="_blank" rel="noopener">View source</a>${mitHtml(d)}</td></tr>`:"")}).join("")||'<tr><td colspan="7" class="muted">No results match your filters.</td></tr>';
@@ -184,7 +189,7 @@ $("more").onclick=()=>{page++;render(true)};
 $("csv").onclick=()=>{const cl=v=>{v=String(v);if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
 const t=[["id","title","component","category","severity","cvss","kev","published","url"],...D.map(d=>[d.id,d.t,d.p,d.c,d.s,d.v??"",d.k,d.d,d.u||""])].map(r=>r.map(cl).join(",")).join("\n");
 const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/csv"}));a.download="vulnerabilities.csv";a.click()};
-$("q").oninput=render;$("sev").onchange=render;$("fx").onchange=render;$("kev").onchange=render;["srt","prd","age","mine"].forEach(i=>$(i).onchange=render);$("stack").oninput=()=>{try{localStorage.setItem("stack",$("stack").value)}catch(_){}render()};addEventListener("hashchange",()=>{fromHash();tabs();render()});prods();fromHash();stats();tabs();render();renderSrc({},false);$("lg").innerHTML="<span>Fix status:</span>"+Object.values(FX).map(f=>`<span class="fx ${f[1]}">${f[0]}</span>`).join("");
+$("q").oninput=render;$("sev").onchange=render;$("fx").onchange=render;$("kev").onchange=render;["srt","prd","age","mine"].forEach(i=>$(i).onchange=render);$("stack").oninput=()=>{try{localStorage.setItem("stack",$("stack").value)}catch(_){}render()};addEventListener("hashchange",()=>{fromHash();tabs();render()});$("srt").onchange=()=>{sk=null;heads();render()};document.querySelectorAll("th[data-k]").forEach(h=>{const f=()=>{const k=h.dataset.k;if(sk===k)sd=-sd;else{sk=k;sd=DEF[k]}heads();render()};h.onclick=f;h.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();f()}}});prods();fromHash();stats();tabs();render();renderSrc({},false);$("lg").innerHTML="<span>Fix status:</span>"+Object.values(FX).map(f=>`<span class="fx ${f[1]}">${f[0]}</span>`).join("");
 const SEV={"Crítica":"Critical",Alta:"High","Média":"Medium",Baixa:"Low"},CAT={Contentores:"Containers"};
 fetch("vulns.json").then(r=>r.ok?r.json():Promise.reject()).then(j=>{const m=new Map(),cnt={};j.forEach(x=>{const k=S.find(z=>(x.source||"").startsWith(z.key));if(k)cnt[k.key]=(cnt[k.key]||0)+1});
 j.forEach(x=>{const s=SEV[x.severity]||x.severity||"Medium",o=m.get(x.id);
