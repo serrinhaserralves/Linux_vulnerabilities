@@ -23,6 +23,12 @@ EPSS_URL = "https://api.first.org/data/v1/epss?cve="
 
 
 ERR = {}
+MAXAGE = CFG.get("max_age_days", 365)
+
+
+def recent(d, days=None):
+    """True se a data (AAAA-MM-DD) cai dentro da janela; evita CVEs antigos reaparecerem por serem atualizados."""
+    return (d or "") >= (dt.date.today() - dt.timedelta(days=days or MAXAGE)).isoformat()
 LABEL = {"from_kev": "CISA KEV", "from_k8s": "Kubernetes CVE feed", "from_redhat": "Red Hat Security Data"}
 
 
@@ -51,7 +57,7 @@ def from_kev():
     kws = [k.lower() for k in CFG["kev_keywords"]]
     for v in http(KEV_URL).get("vulnerabilities", []):
         blob = f'{v.get("vendorProject","")} {v.get("product","")}'.lower()
-        if any(k in blob for k in kws) or v.get("vendorProject", "").lower() == "sap":
+        if (any(k in blob for k in kws) or v.get("vendorProject", "").lower() == "sap") and recent(v.get("dateAdded", "")):
             yield dict(id=v["cveID"], title=clip(v.get("vulnerabilityName"), 200),
                        product=clip(v.get("product"), 80),
                        category="SAP" if v.get("vendorProject", "").lower() == "sap" else "Linux",
@@ -64,7 +70,7 @@ def from_kev():
 def from_k8s():
     for it in http(K8S_URL).get("items", []):
         cid = it.get("id", "")
-        if not cid.startswith("CVE-"):
+        if not cid.startswith("CVE-") or not recent((it.get("date_published") or "")[:10]):
             continue
         yield dict(id=cid, title=clip(it.get("summary"), 200), product="kubernetes",
                    category="Kubernetes", summary=clip(it.get("content_text"), 600),
@@ -80,6 +86,8 @@ def from_osv():
         except Exception as e:
             fail("OSV", e); continue
         for v in res:
+            if not recent((v.get("published") or "")[:10]):
+                continue
             cves = [a for a in v.get("aliases", []) if a.startswith("CVE-")]
             fixed = sorted({ev["fixed"] for a in v.get("affected", []) if a.get("package", {}).get("name") == t["package"]
                             for rg in a.get("ranges", []) for ev in rg.get("events", []) if "fixed" in ev})
@@ -127,7 +135,7 @@ def from_osv_dump():
         with ThreadPoolExecutor(8) as ex:
             recs = list(ex.map(get, ids))
         for v in filter(None, recs):
-            if v.get("withdrawn"): continue
+            if v.get("withdrawn") or not recent((v.get("published") or "")[:10]): continue
             pk = next((a["package"]["name"] for a in v.get("affected", []) if a.get("package")), e["eco"])
             if e.get("match") and not re.search(e["match"], pk.lower()): continue
             cves = [a for a in v.get("aliases", []) if a.startswith("CVE-")]
@@ -157,7 +165,7 @@ def nvd_item(it, kw):
 
 
 def from_nvd():
-    """NVD API 2.0 paginado: CVEs modificados nos ultimos N dias (max 120) por palavra-chave. Com NVD_API_KEY e ~10x mais rapido."""
+    """NVD API 2.0 paginado: CVEs PUBLICADOS nos ultimos N dias (max 120) por palavra-chave. Com NVD_API_KEY e ~10x mais rapido."""
     days = min(int(os.environ.get("NVD_DAYS", CFG.get("nvd_days", 30))), 120)
     end = dt.datetime.utcnow(); start = end - dt.timedelta(days=days)
     fmt = "%Y-%m-%dT%H:%M:%S.000"; pause = 0.7 if os.environ.get("NVD_API_KEY") else 6
@@ -165,7 +173,7 @@ def from_nvd():
         idx, cap = 0, kw.get("max", 300)
         while idx < cap:
             url = ("https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=200&startIndex=%d&keywordSearch=" % idx
-                   + urllib.parse.quote(kw["q"]) + "&lastModStartDate=" + start.strftime(fmt) + "&lastModEndDate=" + end.strftime(fmt))
+                   + urllib.parse.quote(kw["q"]) + "&pubStartDate=" + start.strftime(fmt) + "&pubEndDate=" + end.strftime(fmt))
             try:
                 res = http(url)
             except Exception as e:
@@ -188,6 +196,8 @@ def from_ghsa():
         except Exception as e:
             fail("GitHub Advisories", e); continue
         for a in res:
+            if not recent((a.get("published_at") or "")[:10]):
+                continue
             pk = " ".join(v["package"]["name"] for v in a.get("vulnerabilities", []) if v.get("package"))
             if not any(k in (a.get("summary", "") + " " + pk).lower() for k in kws):
                 continue
@@ -396,8 +406,9 @@ def main():
     for cid, s in scores.items():
         db.execute("UPDATE vulns SET epss=? WHERE id=?", (s, cid))
     db.commit()
+    cut = (dt.date.today() - dt.timedelta(days=MAXAGE)).isoformat()
     rows = db.execute("""SELECT id,source,title,product,category,summary,severity,cvss,kev,epss,url,published,mitigation
-        FROM vulns ORDER BY kev DESC, COALESCE(epss,0) DESC, published DESC LIMIT 8000""").fetchall()
+        FROM vulns WHERE published >= ? ORDER BY kev DESC, COALESCE(epss,0) DESC, published DESC LIMIT 8000""", (cut,)).fetchall()
     keys = ["id", "source", "title", "product", "category", "summary", "severity", "cvss", "kev", "epss", "url", "published", "mitigation"]
     json.dump([dict(zip(keys, r)) for r in rows], open(OUT, "w"), ensure_ascii=False)
     outdir = os.path.dirname(OUT) or "."
