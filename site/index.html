@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Linux, Cloud-Native &amp; SAP Vulnerability Intelligence</title>
+<meta name="description" content="Recent vulnerabilities for Linux, Kubernetes, containers and SAP, prioritised by active exploitation, with mitigations.">
+<meta property="og:title" content="Linux, Cloud-Native &amp; SAP Vulnerability Intelligence"><meta property="og:description" content="Exploited and critical vulnerabilities with mitigations."><meta name="theme-color" content="#5b5bd6">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f3f5fb;--surface:#fff;--text:#161a2e;--muted:#5f6784;--line:#e1e5f2;--accent:#5b5bd6;--accent2:#0ea5a4;--accent-bg:#ecebff;
+--crit:#d92d3a;--high:#e5640c;--med:#b07d00;--low:#3558d6;--kev:#8e3fc4;--ok:#16a34a;--warn:#b45309;--info:#0b7bd1;--g1:#5b5bd6;--g2:#0ea5a4;--shadow:0 1px 2px rgba(22,26,46,.05),0 4px 14px rgba(22,26,46,.06)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0b0e1a;--surface:#141829;--text:#e8eaf6;--muted:#9aa2c4;--line:#252b45;--accent:#8b8bff;--accent2:#2dd4bf;--accent-bg:#1c2040;--crit:#ff6b75;--high:#ff9b4a;--med:#f5d24a;--low:#7ea2ff;--kev:#c78cf5;--ok:#4ade80;--warn:#fbbf24;--info:#60a5fa;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25)}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0b0e1a;--surface:#141829;--text:#e8eaf6;--muted:#9aa2c4;--line:#252b45;--accent:#8b8bff;--accent2:#2dd4bf;--accent-bg:#1c2040;--crit:#ff6b75;--high:#ff9b4a;--med:#f5d24a;--low:#7ea2ff;--kev:#c78cf5;--ok:#4ade80;--warn:#fbbf24;--info:#60a5fa;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.nav{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:12px}
+.brand{font-weight:700;font-size:15px;display:flex;align-items:center;gap:10px}
+.logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;display:grid;place-items:center;font:700 12px ui-monospace,Menlo,monospace}
+.nav small{color:var(--muted)}
+.hero{margin:22px 0 0;padding:26px 24px;border-radius:16px;background:linear-gradient(120deg,var(--g1),var(--g2));color:#fff;box-shadow:var(--shadow)}
+h1{margin:0;font-size:25px;font-weight:700;letter-spacing:-.01em}
+.hero p{margin:6px 0 0;max-width:660px;opacity:.92}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:28px;font-weight:700;line-height:1.1;color:var(--c)}
+.stat span{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.s0{--c:var(--accent)}.s1{--c:var(--crit)}.s2{--c:var(--high)}.s3{--c:var(--kev)}
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+input,select{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+input{flex:1;min-width:200px}
+label.k{display:flex;align-items:center;gap:6px;color:var(--muted);padding:0 4px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tab{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:99px;padding:5px 14px;cursor:pointer;font:inherit;font-size:13px}
+.tab.on{background:linear-gradient(120deg,var(--g1),var(--g2));color:#fff;border-color:transparent}
+.tbl{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:11px 14px;border-bottom:1px solid var(--line);font-weight:600;background:var(--accent-bg)}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.r{cursor:pointer}tr.r:hover td{background:var(--accent-bg)}
+tr:last-child td{border-bottom:0}
+.id{font:600 13px ui-monospace,Menlo,Consolas,monospace;white-space:nowrap}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;background:color-mix(in srgb,currentColor 15%,transparent);white-space:nowrap}
+.Critical{color:var(--crit)}.High{color:var(--high)}.Medium{color:var(--med)}.Low{color:var(--low)}.KEV{color:var(--kev)}
+.muted{color:var(--muted)}
+.det td{background:var(--accent-bg);color:var(--text)}
+.det a{color:var(--accent);font-weight:600}
+h2{font-size:17px;margin:30px 0 4px}
+.sub{color:var(--muted);margin:0 0 12px}
+.src{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.sc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 14px;box-shadow:var(--shadow)}
+.sc .h{display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.sc a{color:var(--text);font-weight:650;text-decoration:none}.sc a:hover{color:var(--accent)}
+.sc .t{margin-left:auto;font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-bg);border-radius:99px;padding:1px 9px;white-space:nowrap}
+.sc p{margin:6px 0 8px;color:var(--muted);font-size:13px}
+.sc .n{font-size:12px;color:var(--muted)}.sc .n b{color:var(--accent2)}
+.foot{margin:22px 0 40px;color:var(--muted);font-size:12px;display:grid;gap:6px}
+.demo{background:var(--accent-bg);color:var(--accent);border-radius:10px;padding:9px 13px;font-size:13px;margin-bottom:14px;border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)}
+.fix{--fc:var(--ok)}.wa{--fc:var(--warn)}.no{--fc:var(--crit)}.vf{--fc:var(--info)}.un{--fc:var(--muted)}
+.fx{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;margin-left:4px;white-space:nowrap;background:color-mix(in srgb,var(--fc) 16%,transparent);color:var(--fc)}
+.mit{margin-top:12px;background:var(--surface);border:1px solid color-mix(in srgb,var(--fc) 40%,var(--line));border-left:5px solid var(--fc);border-radius:10px;padding:10px 14px}
+.mh{display:flex;align-items:center;gap:8px;margin-bottom:8px}.mh .fx{margin-left:0}
+.mit ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.mit li{display:flex;gap:10px;align-items:flex-start}
+.chip{flex:none;min-width:86px;text-align:center;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:color-mix(in srgb,var(--cc) 16%,transparent);color:var(--cc)}
+.c-ok{--cc:var(--ok)}.c-wa{--cc:var(--warn)}.c-pu{--cc:var(--kev)}.c-in{--cc:var(--info)}.c-te{--cc:var(--accent2)}.c-no{--cc:var(--crit)}.c-un{--cc:var(--muted)}
+.lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-4px 0 12px;color:var(--muted);font-size:12px}.lg .fx{margin:0}
+.P1{color:var(--crit)}.P2{color:var(--high)}.P3{color:var(--muted)}
+.dot.bad{background:var(--crit);box-shadow:0 0 0 3px color-mix(in srgb,var(--crit) 25%,transparent)}.dot.off{background:var(--muted);box-shadow:0 0 0 3px color-mix(in srgb,var(--muted) 25%,transparent)}
+tr.r:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+@media (max-width:720px){table{min-width:0}thead{display:none}table,tbody,tr,td{display:block}tr.r{padding:10px 12px;border-bottom:1px solid var(--line)}td{border:0;padding:3px 0}td[data-l]::before{content:attr(data-l) ": ";color:var(--muted);font-size:12px}tr.det td{padding:10px 12px}tr.det td:first-child{display:none}.hero{padding:20px 16px}h1{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="nav"><div class="wrap">
+<div class="brand"><span class="logo">LV</span>vulnerabilities-linux.com</div>
+<small>Linux · Kubernetes · Containers · SAP</small>
+</div></div>
+<div class="wrap">
+<div class="hero">
+<h1>Linux, Cloud-Native &amp; SAP Vulnerability Intelligence</h1>
+<p>A consolidated view of vulnerabilities affecting Linux distributions, the kernel, Kubernetes, the container ecosystem and SAP solutions, prioritised by active exploitation.</p>
+<p id="upd" style="font-size:13px;opacity:.85">Snapshot data, not live.</p>
+</div>
+<div class="stats" id="stats"></div>
+<div class="demo" id="demo">Snapshot of recent threats compiled on 21 November 2026 from public reporting (CISA KEV, SAP Patch Day, Kubernetes and oss-security announcements). When hosted with the collector, this page loads live data from vulns.json.</div>
+<div class="tools">
+<input id="q" type="search" placeholder="Search CVE ID, product or keyword…">
+<select id="sev"><option value="">All severities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+<select id="fx"><option value="">All fix states</option><option value="fix">Patch available</option><option value="workaround">Mitigation only</option><option value="none">No fix</option><option value="verify">Verify with vendor</option><option value="unknown">Unknown</option></select>
+<label class="k"><input type="checkbox" id="kev" style="flex:none;min-width:0"> Actively exploited only</label>
+<select id="srt"><option value="pri">Sort: priority</option><option value="new">Sort: newest</option><option value="cvss">Sort: CVSS</option></select>
+<select id="prd"></select>
+<select id="age"><option value="0">Any date</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option></select>
+</div>
+<div class="tools"><input id="stack" placeholder="My stack: e.g. openssh, kubernetes, netweaver (kept only in your browser)"><label class="k"><input type="checkbox" id="mine" style="flex:none;min-width:0"> Only my stack</label><button class="tab" id="csv">Export CSV</button><a class="tab" href="feed.xml" style="text-decoration:none">RSS feed</a></div>
+<div class="tabs" id="tabs"></div>
+<div class="lg" id="lg"></div>
+<div class="tbl"><table>
+<thead><tr><th>CVE</th><th>Vulnerability</th><th>Component</th><th>Severity</th><th>CVSS</th><th>Priority</th><th>Published</th></tr></thead>
+<tbody id="rows"></tbody></table></div>
+<div class="lg" style="margin:10px 0"><span id="cnt"></span><button class="tab" id="more" style="display:none">Load more</button></div>
+<h2>Data sources</h2>
+<p class="sub" id="srcsub"></p>
+<div class="src" id="src"></div>
+<div class="foot">
+<div>Data comes from public sources (CISA KEV, NVD, OSV.dev, vendor and distribution advisories, SAP, ENISA, FIRST EPSS) and is provided as-is for awareness only; it may be incomplete or delayed. Always verify against the vendor advisory before acting. Each provider's terms and attribution requirements apply. Priority is a simple ranking (exploited, then EPSS, then CVSS), not an assessment of your environment. The My stack filter is stored only in your browser. To report a correction, open an issue on this site's repository.</div>
+</div>
+</div>
+<script>
+let D=[
+{"id": "CVE-2026-76964", "t": "Memory corruption in SAP NetWeaver AS ABAP (Internet Communication Manager)", "p": "SAP NetWeaver AS ABAP", "c": "SAP", "s": "Critical", "v": 10.0, "d": "2026-11-10", "k": 0, "x": "SAP Security Note 3778530, November 2026 Patch Day.", "a": "KRNL64UC 7.53; KERNEL 7.53, 7.54, 7.77, 7.93, 9.16, 9.18, 9.20", "u": "https://support.sap.com/en/my-support/knowledge-base/security-notes-news/november-2026.html", "m": {"s": "fix", "st": [["Patch", "Apply SAP Security Note 3778530 to all affected versions listed above."], ["Plan", "Fix internet-facing systems first: this note scores CVSS 10.0 and attackers need no credentials."], ["Contain", "If you cannot patch immediately, restrict network access to the SAP Gateway, Web Dispatcher and ICM ports."]]}},
+{"id": "CVE-2026-89126", "t": "Memory corruption in SAP Web Dispatcher", "p": "SAP Web Dispatcher", "c": "SAP", "s": "Critical", "v": 10.0, "d": "2026-11-10", "k": 0, "x": "SAP Security Note 3778556, November 2026 Patch Day.", "a": "WEBDISP 7.53, 7.54, 7.77, 7.93, 9.16; KRNL64UC 7.53; KERNEL 7.53 to 9.20; XS_ADVANCED_RUNTIME 1.00", "u": "https://support.sap.com/en/my-support/knowledge-base/security-notes-news/november-2026.html", "m": {"s": "fix", "st": [["Patch", "Apply SAP Security Note 3778556 to all affected versions listed above."], ["Plan", "Fix internet-facing systems first: this note scores CVSS 10.0 and attackers need no credentials."], ["Contain", "If you cannot patch immediately, restrict network access to the SAP Gateway, Web Dispatcher and ICM ports."]]}},
+{"id": "CVE-2026-89103", "t": "Broken access control in SAP Gateway", "p": "SAP Gateway", "c": "SAP", "s": "Critical", "v": 10.0, "d": "2026-11-10", "k": 0, "x": "SAP Security Note 3798345, November 2026 Patch Day.", "a": "KERNEL 7.22, 7.53, 7.54, 7.77, 7.93, 8.04, 9.16, 9.20, 9.21 and KRNL64 variants", "u": "https://support.sap.com/en/my-support/knowledge-base/security-notes-news/november-2026.html", "m": {"s": "fix", "st": [["Patch", "Apply SAP Security Note 3798345 to all affected versions listed above."], ["Plan", "Fix internet-facing systems first: this note scores CVSS 10.0 and attackers need no credentials."], ["Contain", "If you cannot patch immediately, restrict network access to the SAP Gateway, Web Dispatcher and ICM ports."]]}},
+{"id": "CVE-2026-120017", "t": "Missing authentication in SAP NetWeaver AS ABAP (SAML2 Service Provider)", "p": "SAP NetWeaver AS ABAP", "c": "SAP", "s": "Critical", "v": 10.0, "d": "2026-11-10", "k": 0, "x": "SAP Security Note 3849308, November 2026 Patch Day.", "a": "SAP_BASIS 702, 731, 740, 750 to 758, 816, 920, 921, 922", "u": "https://support.sap.com/en/my-support/knowledge-base/security-notes-news/november-2026.html", "m": {"s": "fix", "st": [["Patch", "Apply SAP Security Note 3849308 to all affected versions listed above."], ["Plan", "Fix internet-facing systems first: this note scores CVSS 10.0 and attackers need no credentials."], ["Contain", "Review SAML2 service provider settings on ABAP systems and limit network access until the patch is applied."]]}},
+{"id": "CVE-2026-89119", "t": "Cross-Site Request Forgery (CSRF) in SAP Web Dispatcher and Internet Communication Manager", "p": "SAP Web Dispatcher / ICM", "c": "SAP", "s": "Critical", "v": 9.6, "d": "2026-11-10", "k": 0, "x": "SAP Security Note 3804858 (also CVE-2026-120014), November 2026 Patch Day.", "a": "WEBDISP 7.93, 9.16; XS_ADVANCED_RUNTIME 1.00; KERNEL 7.93, 9.16, 9.20, 9.21", "u": "https://support.sap.com/en/my-support/knowledge-base/security-notes-news/november-2026.html", "m": {"s": "fix", "st": [["Patch", "Apply SAP Security Note 3804858 to all affected versions listed above."], ["Contain", "If you cannot patch immediately, restrict network access to the SAP Gateway, Web Dispatcher and ICM ports."]]}},
+{"id": "CVE-2026-109798", "t": "XML External Entity (XXE) in SAP BusinessObjects BI Platform (Web Intelligence)", "p": "SAP BusinessObjects BI", "c": "SAP", "s": "Critical", "v": 9.1, "d": "2026-11-10", "k": 0, "x": "SAP Security Note 3799117, November 2026 Patch Day.", "a": "ENTERPRISE 430, 2025, 2027", "u": "https://support.sap.com/en/my-support/knowledge-base/security-notes-news/november-2026.html", "m": {"s": "fix", "st": [["Patch", "Apply SAP Security Note 3799117 to all affected versions listed above."], ["Note", "The public bulletin lists no workaround. Check the full note in the SAP Support Portal."]]}},
+{"id": "CVE-2026-123158", "t": "SSHole: OpenSSH authentication bypass on musl-based Linux", "p": "openssh (musl, PAM disabled)", "c": "Linux", "s": "High", "v": 8.1, "d": "2026-11-09", "k": 1, "x": "Any password of 257 to 1024 characters is accepted for passwordless accounts, including root, on musl-based systems (Alpine, OpenWrt, Buildroot, Yocto) with PAM disabled. Added to CISA KEV in early November, federal deadline 12 Nov 2026. Some reports cite the ID as CVE-2026-12315, so confirm in the KEV catalog.", "a": "Linux distributions using musl with OpenSSH and PAM disabled", "u": "https://cybernews.com/security/cisa-confirms-active-exploitation-sshole/", "m": {"s": "fix", "st": [["Patch", "Update OpenSSH: the project released an updated version, although it considers the root cause to lie outside OpenSSH (in the musl library)."], ["Workaround", "General hardening, not from the vendor advisory: disable password authentication (PasswordAuthentication no) and use keys, make sure no account has an empty or * password hash, and enable PAM where possible."], ["Contain", "Restrict SSH exposure to trusted networks or a VPN."], ["Detect", "Review successful SSH logins to root and passwordless accounts from unexpected addresses. GreyNoise and SANS report active scanning."], ["Plan", "Listed in CISA KEV (federal deadline 12 Nov 2026): treat as urgent."]]}},
+{"id": "CVE-2026-122313", "t": "Kyverno: multiple flaws, up to CVSS 9.9 (tenant can rewrite RoleBindings)", "p": "kyverno", "c": "Kubernetes", "s": "Critical", "v": 9.9, "d": "2026-11-05", "k": 0, "x": "About 20 Kyverno CVEs (CVE-2026-122302 to CVE-2026-122323) were published on 4 to 5 Nov 2026, the worst rated 9.9. Fixed in Kyverno 1.19.2. Verify against the upstream advisories.", "a": "kyverno < 1.19.2 (Helm chart < 3.9.2)", "u": "https://corgea.com/research/cve-2026-122313-122311-122310-102895-102340-122266-kyverno-gpustack-telepresence-eks-firecracker-november-2026", "m": {"s": "fix", "st": [["Patch", "Upgrade Kyverno to 1.19.2 or later (Helm chart 3.9.2 or later)."], ["Detect", "In multi-tenant clusters, audit RoleBindings and ClusterRoleBindings for unexpected changes and review policies created by tenants."], ["Note", "No workaround is confirmed in the sources. Check the individual Kyverno advisories."]]}},
+{"id": "CVE-2026-116472", "t": "ingress-nginx mirror-target annotation self-DoS (no fix planned)", "p": "ingress-nginx", "c": "Kubernetes", "s": "Low", "v": 2.7, "d": "2026-11-05", "k": 0, "x": "One annotation can drop traffic through the controller. The Kubernetes project will not issue a fix because ingress-nginx maintenance ended in March 2026. Mitigate with an admission controller that rejects Ingresses using mirror-target.", "a": "ingress-nginx (no upstream fix planned)", "u": "https://www.openwall.com/lists/oss-security/2026/11/05/4", "m": {"s": "workaround", "st": [["None", "No upstream fix: the Kubernetes project will not issue one because ingress-nginx maintenance ended in March 2026. SUSE's fork is reported as fixed."], ["Workaround", "Use an admission controller to reject Ingresses that set the mirror-target annotation."], ["Detect", "Localhost addresses in the mirror-target annotation may indicate an exploitation attempt. Report evidence to security@kubernetes.io."], ["Plan", "Plan a move to a maintained ingress controller (general advice)."]]}},
+{"id": "CVE-2026-46300", "t": "Fragnesia: Linux kernel XFRM ESP-in-TCP flaw gives local root", "p": "linux-kernel", "c": "Kernel", "s": "High", "v": null, "d": "2026-10-28", "k": 1, "x": "Logic bug that lets a local attacker gain root through page cache corruption. Added to CISA KEV on 28 Oct 2026. CISA says it can be chained with CVE-2026-109618 and CVE-2026-109619 to implant PHP webshells.", "u": "https://www.bleepingcomputer.com/news/security/cisa-warns-of-fragnesia-linux-flaw-chained-in-php2shell-attacks/", "m": {"s": "verify", "st": [["Patch", "Install the kernel update from your distribution as soon as it is available, and check your distribution's security tracker for CVE-2026-46300."], ["Contain", "Limit local and unprivileged shell access on exposed servers until patched (general advice)."], ["Detect", "Look for unexpected PHP webshells on web servers: CISA says this can be chained with CVE-2026-109618 and CVE-2026-109619, so patch those too."], ["Plan", "Listed in CISA KEV (federal deadline 31 Oct 2026): treat as urgent."]]}},
+{"id": "CVE-2025-1974", "t": "ingress-nginx configuration injection (IngressNightmare)", "p": "ingress-nginx", "c": "Kubernetes", "s": "Critical", "v": 9.8, "d": "2025-03-24", "k": 0, "x": "Unauthenticated configuration injection in the admission controller can lead to code execution and secret exposure.", "m": {"s": "fix", "st": [["Patch", "Upgrade ingress-nginx to v1.12.1 or v1.11.5 or later."], ["Workaround", "If you cannot upgrade, disable the admission controller (validating webhook) and restrict network access to it to the Kubernetes API server."], ["Plan", "ingress-nginx maintenance ended in March 2026, so plan a move to a maintained ingress controller."]]}},
+{"id": "CVE-2024-6387", "t": "OpenSSH sshd signal handler race condition (regreSSHion)", "p": "openssh", "c": "Linux", "s": "High", "v": 8.1, "d": "2024-07-01", "k": 0, "x": "Remote code execution as root possible on glibc-based systems under specific conditions.", "m": {"s": "fix", "st": [["Patch", "Upgrade to OpenSSH 9.8p1 or later, or install your distribution's backported fix."], ["Workaround", "Set LoginGraceTime to 0 in sshd_config. This closes the race but makes the server easier to exhaust with connections (denial of service)."], ["Contain", "Restrict SSH exposure to trusted networks or a VPN."]]}},
+{"id": "CVE-2024-21626", "t": "runc container breakout via leaked file descriptor", "p": "runc", "c": "Containers", "s": "High", "v": 8.6, "d": "2024-01-31", "k": 0, "x": "A crafted working directory allows access to the host filesystem from within a container.", "m": {"s": "fix", "st": [["Patch", "Upgrade runc to 1.1.12 or later, then restart or recreate running containers."], ["Note", "No complete workaround is documented. Run only images and Dockerfiles you trust until patched."]]}},
+{"id": "CVE-2024-3094", "t": "Malicious code in xz/liblzma releases 5.6.0 and 5.6.1", "p": "xz-utils", "c": "Linux", "s": "Critical", "v": 10.0, "d": "2024-03-29", "k": 0, "x": "Backdoor inserted through upstream release tarballs, affecting sshd on some distributions.", "m": {"s": "fix", "st": [["Patch", "Downgrade to an unaffected xz release (5.4.x) or install your distribution's updated package."], ["Detect", "Check the version with xz --version: only 5.6.0 and 5.6.1 are affected."], ["Plan", "On systems that ran an affected build, consider rotating SSH keys and credentials as a precaution."]]}}
+];
+const $=i=>document.getElementById(i),O={Critical:0,High:1,Medium:2,Low:3};
+let cats=["All",...new Set(D.map(d=>d.c))],cat="All",open=null;
+const e=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const FX={fix:["Patch available","fix"],workaround:["Mitigation only","wa"],none:["No fix","no"],verify:["Verify with vendor","vf"],unknown:["Unknown","un"]};
+const fxs=d=>d.m?d.m.s:"unknown";
+const CH={Patch:"c-ok",Workaround:"c-wa",Contain:"c-pu",Detect:"c-in",Plan:"c-te",Action:"c-in",None:"c-no",Note:"c-un"};
+const fixBadge=d=>{const f=FX[fxs(d)];return `<span class="fx ${f[1]}">${f[0]}</span>`};
+const mitHtml=d=>{const m=d.m||{s:"unknown",st:[["Note","The source gives no mitigation details. Check the vendor or distribution advisory."]]};const f=FX[m.s]||FX.unknown;
+return `<div class="mit ${f[1]}"><div class="mh"><b>Mitigation</b><span class="fx ${f[1]}">${f[0]}</span></div><ul>${m.st.map(x=>`<li><span class="chip ${CH[x[0]]||"c-un"}">${x[0]}</span><span>${e(x[1])}</span></li>`).join("")}</ul></div>`};
+const S=[
+{n:"CISA KEV",key:"CISA KEV",t:"Exploited",d:"Catalog of vulnerabilities known to be exploited in the wild.",u:"https://www.cisa.gov/known-exploited-vulnerabilities-catalog"},
+{n:"NVD",key:"NVD",t:"CVE database",d:"NIST National Vulnerability Database with CVSS scores.",u:"https://nvd.nist.gov"},
+{n:"OSV.dev",key:"OSV",t:"Open source",d:"Debian, Ubuntu, Alpine, AlmaLinux and Go ecosystem advisories.",u:"https://osv.dev"},
+{n:"GitHub Advisories",key:"GitHub Advisories",t:"Open source",d:"Reviewed security advisories for Go projects.",u:"https://github.com/advisories"},
+{n:"Kubernetes CVE feed",key:"Kubernetes CVE feed",t:"Kubernetes",d:"Official CVEs from the Security Response Committee.",u:"https://kubernetes.io/docs/reference/issues-security/official-cve-feed/"},
+{n:"Red Hat Security Data",key:"Red Hat",t:"Distribution",d:"CVE data for RHEL and derivatives.",u:"https://access.redhat.com/security/security-updates/"},
+{n:"Ubuntu Security Notices",key:"Ubuntu",t:"Distribution",d:"USN advisories for Ubuntu releases.",u:"https://ubuntu.com/security/notices"},
+{n:"Debian Security Advisories",key:"Debian",t:"Distribution",d:"DSA advisories for Debian releases.",u:"https://www.debian.org/security/"},
+{n:"Linux kernel CVEs",key:"Linux kernel",t:"Kernel",d:"CVE announcements from the kernel CNA.",u:"https://lore.kernel.org/linux-cve-announce/"},
+{n:"oss-security",key:"oss-security",t:"Mailing list",d:"Early public disclosures for open-source software.",u:"https://www.openwall.com/lists/oss-security/"},
+{n:"CISA advisories",key:"CISA Cyber",t:"Advisories",d:"CISA cybersecurity advisories and alerts.",u:"https://www.cisa.gov/news-events/cybersecurity-advisories"},
+{n:"ENISA EUVD",key:"ENISA",t:"EU database",d:"European Union Vulnerability Database: exploited and critical.",u:"https://euvd.enisa.europa.eu"},
+{n:"SAP Security Patch Day",key:"SAP",t:"SAP",d:"Monthly SAP security notes with affected versions.",u:"https://support.sap.com/securitynotes"},
+{n:"FIRST EPSS",key:"EPSS",t:"Enrichment",d:"Exploit prediction scores added to every CVE.",u:"https://www.first.org/epss/"}];
+function renderSrc(cnt,live){const tot=Object.values(cnt).reduce((a,b)=>a+b,0);
+$("srcsub").textContent=S.length+" sources configured in the collector"+(live?" · "+tot+" records loaded in the last run. Green: records received. Amber: none received. Red: failed.":". Run status appears once the page is hosted with the collector.");
+$("src").innerHTML=S.map(x=>{const c=cnt[x.key]||0,er=ST&&Object.entries(ST.errors||{}).find(z=>z[0].startsWith(x.key)),cl=x.key==="EPSS"||!live?"":c>0?"":er?"bad":"off";
+return `<div class="sc"><div class="h"><span class="dot ${cl}"></span><a href="${x.u}" target="_blank" rel="noopener">${x.n}</a><span class="t">${x.t}</span></div><p>${x.d}</p><div class="n">${x.key==="EPSS"?"Enrichment":live?(c>0?"<b>"+c+"</b> records":er?"Failed: "+e(er[1]):"No records in the last run"):"Enabled in collector"}</div></div>`}).join("")}
+function stats(){const n=(f)=>D.filter(f).length;
+$("stats").innerHTML=[["Tracked",D.length],["Critical",n(d=>d.s==="Critical")],["High",n(d=>d.s==="High")],["Actively exploited",n(d=>d.k)]]
+.map((a,i)=>`<div class="stat s${i}"><b>${a[1]}</b><span>${a[0]}</span></div>`).join("")}
+function tabs(){$("tabs").innerHTML=cats.map(c=>`<button class="tab ${c===cat?"on":""}" data-c="${c}">${c}</button>`).join("");
+document.querySelectorAll("#tabs .tab").forEach(b=>b.onclick=()=>{cat=b.dataset.c;try{history.replaceState(null,"",cat==="All"?location.pathname:"#"+cat.toLowerCase())}catch(_){}tabs();render()})}
+let ST=null,CNT={},page=1;const PS=25;
+const pri=d=>(d.k?100:0)+(d.e||0)*50+(d.v||0);
+const plab=d=>d.k||(d.e||0)>=.5?["Urgent","P1"]:(d.s==="Critical"||d.s==="High")?["Plan","P2"]:["Routine","P3"];
+function prods(){const n={};D.forEach(d=>n[d.p]=(n[d.p]||0)+1);$("prd").innerHTML='<option value="">All components</option>'+Object.keys(n).sort((a,b)=>n[b]-n[a]).slice(0,80).sort().map(p=>`<option>${e(p)}</option>`).join("")}
+function fromHash(){const h=decodeURIComponent(location.hash.slice(1)).toLowerCase();if(h==="kev")$("kev").checked=true;else{const c=cats.find(x=>x.toLowerCase()===h);if(c)cat=c}}
+try{$("stack").value=localStorage.getItem("stack")||""}catch(_){}
+function render(keep){if(keep!==true)page=1;
+const q=$("q").value.toLowerCase(),s=$("sev").value,k=$("kev").checked,p=$("prd").value,ag=+$("age").value,mine=$("mine").checked,fx=$("fx").value;
+const st=$("stack").value.toLowerCase().split(",").map(x=>x.trim()).filter(Boolean);
+const mx=D.reduce((a,d)=>d.d>a?d.d:a,"0"),lim=ag?new Date(new Date(mx)-ag*864e5).toISOString().slice(0,10):"";
+const r=D.filter(d=>(cat==="All"||d.c===cat)&&(!s||d.s===s)&&(!k||d.k)&&(!fx||fxs(d)===fx)&&(!p||d.p===p)&&(!lim||d.d>=lim)&&(!mine||!st.length||st.some(x=>(d.p+" "+d.t).toLowerCase().includes(x)))&&(!q||(d.id+d.t+d.p+d.c).toLowerCase().includes(q)));
+const so=$("srt").value;
+r.sort(so==="new"?(a,b)=>b.d.localeCompare(a.d)||pri(b)-pri(a):so==="cvss"?(a,b)=>(b.v||0)-(a.v||0):(a,b)=>pri(b)-pri(a)||b.d.localeCompare(a.d));
+const sh=r.slice(0,page*PS);$("cnt").textContent="Showing "+sh.length+" of "+r.length;$("more").style.display=sh.length<r.length?"":"none";
+$("rows").innerHTML=sh.map(d=>{const pl=plab(d);return `<tr class="r" tabindex="0" role="button" aria-expanded="${open===d.id}" data-i="${e(d.id)}"><td class="id" data-l="CVE">${e(d.id)}</td><td data-l="Vulnerability">${e(d.t)} ${d.k?'<span class="pill KEV">KEV</span>':""}${fixBadge(d)}</td><td class="muted" data-l="Component">${e(d.p)}<br><small>${e(d.c)}</small></td><td data-l="Severity"><span class="pill ${d.s}">${d.s}</span></td><td data-l="CVSS">${d.v==null?"\u2014":d.v.toFixed(1)}</td><td data-l="Priority"><span class="pill ${pl[1]}">${pl[0]}</span></td><td class="muted" data-l="Published">${e(d.d)}</td></tr>`
++(open===d.id?`<tr class="det"><td></td><td colspan="6">${e(d.x)}${d.a?` <b>Affected versions:</b> ${e(d.a)}.`:""}${d.e!=null?` <b>EPSS:</b> ${(d.e*100).toFixed(1)}%.`:""}${d.ss&&d.ss.size>1?` <b>Seen in:</b> ${[...d.ss].map(z=>e(z)).join(", ")}.`:""} <a href="${e(d.u||("https://nvd.nist.gov/vuln/detail/"+d.id))}" target="_blank" rel="noopener">View source</a>${mitHtml(d)}</td></tr>`:"")}).join("")||'<tr><td colspan="7" class="muted">No results match your filters.</td></tr>';
+document.querySelectorAll("tr.r").forEach(t=>{const f=()=>{open=open===t.dataset.i?null:t.dataset.i;render(true)};t.onclick=f;t.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();f()}}})}
+$("more").onclick=()=>{page++;render(true)};
+$("csv").onclick=()=>{const cl=v=>{v=String(v);if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
+const t=[["id","title","component","category","severity","cvss","kev","published","url"],...D.map(d=>[d.id,d.t,d.p,d.c,d.s,d.v??"",d.k,d.d,d.u||""])].map(r=>r.map(cl).join(",")).join("\n");
+const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/csv"}));a.download="vulnerabilities.csv";a.click()};
+$("q").oninput=render;$("sev").onchange=render;$("fx").onchange=render;$("kev").onchange=render;["srt","prd","age","mine"].forEach(i=>$(i).onchange=render);$("stack").oninput=()=>{try{localStorage.setItem("stack",$("stack").value)}catch(_){}render()};addEventListener("hashchange",()=>{fromHash();tabs();render()});prods();fromHash();stats();tabs();render();renderSrc({},false);$("lg").innerHTML="<span>Fix status:</span>"+Object.values(FX).map(f=>`<span class="fx ${f[1]}">${f[0]}</span>`).join("");
+const SEV={"Crítica":"Critical",Alta:"High","Média":"Medium",Baixa:"Low"},CAT={Contentores:"Containers"};
+fetch("vulns.json").then(r=>r.ok?r.json():Promise.reject()).then(j=>{const m=new Map(),cnt={};j.forEach(x=>{const k=S.find(z=>(x.source||"").startsWith(z.key));if(k)cnt[k.key]=(cnt[k.key]||0)+1});
+j.forEach(x=>{const s=SEV[x.severity]||x.severity||"Medium",o=m.get(x.id);
+if(o){o.k=o.k||x.kev;o.v=o.v??x.cvss;o.ss.add(x.source);o.e=o.e??x.epss;if(!o.m&&x.mitigation)o.m={s:"verify",st:[["Action",x.mitigation]]};if(O[s]<O[o.s])o.s=s;return}
+m.set(x.id,{id:x.id,t:x.title,p:x.product,c:CAT[x.category]||x.category,s:O[s]===undefined?"Medium":s,v:x.cvss,d:x.published,k:x.kev,x:x.summary,u:/^https?:\/\//i.test(x.url||"")?x.url:"",e:x.epss,ss:new Set([x.source]),m:x.mitigation?{s:"verify",st:[["Action",x.mitigation]]}:null})});
+if(m.size){D=[...m.values()];prods();cats=["All",...new Set(D.map(d=>d.c))];cat="All";fromHash();stats();tabs();render();$("demo").textContent="Live data loaded from vulns.json.";CNT=cnt;renderSrc(cnt,true)}}).catch(()=>{});
+fetch("status.json").then(r=>r.ok?r.json():Promise.reject()).then(j=>{ST=j;$("upd").textContent="Last updated "+String(j.generated_at).replace("T"," ")+" UTC · "+j.total+" records";renderSrc(CNT,true)}).catch(()=>{});
+</script>
+</body>
+</html>
