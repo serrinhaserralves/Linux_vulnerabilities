@@ -1,0 +1,491 @@
+{
+ "kev_keywords": [
+  "linux",
+  "kernel",
+  "ubuntu",
+  "debian",
+  "red hat",
+  "rhel",
+  "suse",
+  "alpine",
+  "almalinux",
+  "rocky",
+  "fedora",
+  "centos",
+  "oracle linux",
+  "openssh",
+  "openssl",
+  "sudo",
+  "glibc",
+  "systemd",
+  "polkit",
+  "bash",
+  "grub",
+  "util-linux",
+  "dbus",
+  "samba",
+  "cups",
+  "nginx",
+  "apache http",
+  "netfilter",
+  "kubernetes",
+  "kubelet",
+  "kubectl",
+  "k3s",
+  "rancher",
+  "openshift",
+  "containerd",
+  "cri-o",
+  "runc",
+  "docker",
+  "podman",
+  "buildah",
+  "helm",
+  "etcd",
+  "istio",
+  "envoy",
+  "cilium",
+  "calico",
+  "argo",
+  "flux",
+  "traefik",
+  "kyverno",
+  "harbor",
+  "coredns",
+  "cert-manager",
+  "vmware tanzu",
+  "sap"
+ ],
+ "sap_months": 12,
+ "nvd_days": 30,
+ "osv_days": 14,
+ "redhat_days": 60,
+ "osv_dumps": [
+  {
+   "eco": "Linux",
+   "category": "Kernel",
+   "max": 500
+  },
+  {
+   "eco": "Debian",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "eco": "Ubuntu",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "eco": "Alpine",
+   "category": "Linux",
+   "max": 250
+  },
+  {
+   "eco": "AlmaLinux",
+   "category": "Linux",
+   "max": 250
+  },
+  {
+   "eco": "Rocky Linux",
+   "category": "Linux",
+   "max": 250
+  },
+  {
+   "eco": "SUSE",
+   "category": "Linux",
+   "max": 300
+  },
+  {
+   "eco": "Red Hat",
+   "category": "Linux",
+   "max": 300
+  },
+  {
+   "eco": "Go",
+   "category": "Kubernetes",
+   "max": 700,
+   "match": "kubernetes|k8s\\.io|containerd|runc|docker|moby|helm|etcd|istio|cilium|calico|argo|fluxcd|cri-o|podman|rancher|k3s|traefik|envoy|kyverno|coredns|cert-manager|harbor|opencontainers"
+  }
+ ],
+ "rss": [
+  {
+   "name": "Ubuntu Security Notices",
+   "url": "https://ubuntu.com/security/notices/rss.xml",
+   "category": "Linux",
+   "limit": 100
+  },
+  {
+   "name": "Debian Security Advisories",
+   "url": "https://www.debian.org/security/dsa.en.rdf",
+   "category": "Linux",
+   "limit": 100
+  },
+  {
+   "name": "Linux kernel CVE announcements",
+   "url": "https://lore.kernel.org/linux-cve-announce/new.atom",
+   "category": "Kernel",
+   "filter": false,
+   "limit": 150
+  },
+  {
+   "name": "oss-security",
+   "url": "https://seclists.org/rss/oss-sec.rss",
+   "category": "Linux",
+   "limit": 100
+  },
+  {
+   "name": "CISA Cybersecurity Advisories",
+   "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
+   "category": "Linux",
+   "limit": 100
+  }
+ ],
+ "ghsa_ecosystems": [
+  "go"
+ ],
+ "nvd_keywords": [
+  {
+   "q": "linux kernel",
+   "category": "Kernel",
+   "max": 800
+  },
+  {
+   "q": "glibc",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "systemd",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "openssh",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "sudo",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "polkit",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "openssl",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "bash",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "grub2",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "util-linux",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "dbus",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "samba",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "ubuntu linux",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "debian linux",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "red hat enterprise linux",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "suse linux",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "alpine linux",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "almalinux",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "rocky linux",
+   "category": "Linux",
+   "max": 400
+  },
+  {
+   "q": "kubernetes",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "kubelet",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "kubectl",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "k3s",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "rancher",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "openshift",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "etcd",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "istio",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "cilium",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "calico",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "argo cd",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "traefik",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "kyverno",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "coredns",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "cert-manager",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "helm",
+   "category": "Kubernetes",
+   "max": 300
+  },
+  {
+   "q": "containerd",
+   "category": "Containers",
+   "max": 300
+  },
+  {
+   "q": "cri-o",
+   "category": "Containers",
+   "max": 300
+  },
+  {
+   "q": "runc",
+   "category": "Containers",
+   "max": 300
+  },
+  {
+   "q": "docker",
+   "category": "Containers",
+   "max": 300
+  },
+  {
+   "q": "podman",
+   "category": "Containers",
+   "max": 300
+  },
+  {
+   "q": "buildah",
+   "category": "Containers",
+   "max": 300
+  },
+  {
+   "q": "harbor",
+   "category": "Containers",
+   "max": 300
+  },
+  {
+   "q": "SAP NetWeaver",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP S/4HANA",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP HANA",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP BusinessObjects",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Web Dispatcher",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Gateway",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Commerce",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Business One",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Solution Manager",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Fiori",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Business Technology Platform",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Cloud Connector",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Netweaver Application Server",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP ERP",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Business Warehouse",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP GUI",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Identity Management",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Cloud Application Programming",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Landscape Management",
+   "category": "SAP",
+   "max": 300
+  },
+  {
+   "q": "SAP Host Agent",
+   "category": "SAP",
+   "max": 300
+  }
+ ],
+ "osv": [
+  {
+   "ecosystem": "Debian:12",
+   "package": "openssh",
+   "category": "Linux"
+  },
+  {
+   "ecosystem": "Ubuntu:22.04:LTS",
+   "package": "openssh",
+   "category": "Linux"
+  },
+  {
+   "ecosystem": "Go",
+   "package": "github.com/opencontainers/runc",
+   "category": "Containers"
+  },
+  {
+   "ecosystem": "Go",
+   "package": "github.com/containerd/containerd",
+   "category": "Containers"
+  },
+  {
+   "ecosystem": "Go",
+   "package": "k8s.io/kubernetes",
+   "category": "Kubernetes"
+  },
+  {
+   "ecosystem": "Go",
+   "package": "github.com/kubernetes/ingress-nginx",
+   "category": "Kubernetes"
+  }
+ ]
+}
