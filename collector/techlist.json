@@ -1,5 +1,5 @@
 {
- "kev_keywords": ["linux", "kernel", "ubuntu", "debian", "red hat", "rhel", "suse", "alpine", "almalinux", "rocky", "fedora", "centos", "oracle linux", "openssh", "openssl", "sudo", "glibc", "systemd", "polkit", "bash", "grub", "util-linux", "dbus", "samba", "cups", "nginx", "apache http", "netfilter", "kubernetes", "kubelet", "kubectl", "k3s", "rancher", "openshift", "containerd", "cri-o", "runc", "docker", "podman", "buildah", "helm", "etcd", "istio", "envoy", "cilium", "calico", "argo", "flux", "traefik", "kyverno", "harbor", "coredns", "cert-manager", "vmware tanzu", "sap"],
+ "kev_keywords": ["linux", "kernel", "ubuntu", "debian", "red hat", "rhel", "openssh", "openssl", "sudo", "glibc", "systemd", "polkit", "bash", "grub", "util-linux", "dbus", "samba", "cups", "nginx", "apache http", "netfilter", "kubernetes", "kubelet", "kubectl", "k3s", "rancher", "openshift", "containerd", "cri-o", "runc", "docker", "podman", "buildah", "helm", "etcd", "istio", "envoy", "cilium", "calico", "argo", "flux", "traefik", "kyverno", "harbor", "coredns", "cert-manager", "vmware tanzu", "sap"],
  "sap_months": 12,
  "nvd_days": 30,
  "osv_days": 14,
@@ -8,17 +8,14 @@
   {"eco": "Linux", "category": "Kernel", "max": 500},
   {"eco": "Debian", "category": "Linux", "max": 400},
   {"eco": "Ubuntu", "category": "Linux", "max": 400},
-  {"eco": "Alpine", "category": "Linux", "max": 250},
-  {"eco": "AlmaLinux", "category": "Linux", "max": 250},
-  {"eco": "Rocky Linux", "category": "Linux", "max": 250},
-  {"eco": "SUSE", "category": "Linux", "max": 300},
   {"eco": "Red Hat", "category": "Linux", "max": 300},
-  {"eco": "Go", "category": "Kubernetes", "max": 700, "match": "kubernetes|k8s\\.io|containerd|runc|docker|moby|helm|etcd|istio|cilium|calico|argo|fluxcd|cri-o|podman|rancher|k3s|traefik|envoy|kyverno|coredns|cert-manager|harbor|opencontainers"}
+  {"eco": "Go", "category": "Kubernetes", "max": 700, "match": "kubernetes|k8s\\.io|containerd|runc|docker|moby|helm|etcd|istio|cilium|calico|argo|fluxcd|cri-o|podman|rancher|k3s|traefik|envoy|kyverno|coredns|cert-manager|harbor|opencontainers"},
+  {"eco": "TuxCare", "category": "Linux", "max": 300}
  ],
  "rss": [
-  {"name": "Ubuntu Security Notices", "url": "https://ubuntu.com/security/notices/rss.xml", "category": "Linux", "limit": 100},
-  {"name": "Debian Security Advisories", "url": "https://www.debian.org/security/dsa.en.rdf", "category": "Linux", "limit": 100},
-  {"name": "Linux kernel CVE announcements", "url": "https://lore.kernel.org/linux-cve-announce/new.atom", "category": "Kernel", "filter": false, "limit": 150},
+  {"name": "Ubuntu Security Notices", "url": "https://ubuntu.com/security/notices/rss.xml", "category": "Linux", "limit": 100, "systems": "Ubuntu"},
+  {"name": "Debian Security Advisories", "url": "https://www.debian.org/security/dsa.en.rdf", "category": "Linux", "limit": 100, "systems": "Debian"},
+  {"name": "Linux kernel CVE announcements", "url": "https://lore.kernel.org/linux-cve-announce/new.atom", "category": "Kernel", "filter": false, "limit": 150, "systems": "Linux kernel"},
   {"name": "oss-security", "url": "https://seclists.org/rss/oss-sec.rss", "category": "Linux", "limit": 100},
   {"name": "CISA Cybersecurity Advisories", "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml", "category": "Linux", "limit": 100}
  ],
@@ -39,10 +36,6 @@
   {"q": "ubuntu linux", "category": "Linux", "max": 400},
   {"q": "debian linux", "category": "Linux", "max": 400},
   {"q": "red hat enterprise linux", "category": "Linux", "max": 400},
-  {"q": "suse linux", "category": "Linux", "max": 400},
-  {"q": "alpine linux", "category": "Linux", "max": 400},
-  {"q": "almalinux", "category": "Linux", "max": 400},
-  {"q": "rocky linux", "category": "Linux", "max": 400},
   {"q": "kubernetes", "category": "Kubernetes", "max": 300},
   {"q": "kubelet", "category": "Kubernetes", "max": 300},
   {"q": "kubectl", "category": "Kubernetes", "max": 300},
@@ -95,5 +88,6 @@
   {"ecosystem": "Go", "package": "k8s.io/kubernetes", "category": "Kubernetes"},
   {"ecosystem": "Go", "package": "github.com/kubernetes/ingress-nginx", "category": "Kubernetes"}
  ],
- "max_age_days": 365
+ "max_age_days": 365,
+ "extra_systems": ["TuxCare"]
 }
