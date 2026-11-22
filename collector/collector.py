@@ -3,7 +3,7 @@
 Fontes: CISA KEV, feed oficial de CVEs do Kubernetes, OSV.dev, EPSS (FIRST).
 Só biblioteca standard. Guarda em SQLite e exporta vulns.json para o portal.
 Correr com cron/CronJob, por exemplo de hora a hora."""
-import calendar, hashlib, sys, html as htmllib, json, os, re, sqlite3, time, urllib.parse, urllib.request
+import calendar, hashlib, sys, html as htmllib, json, os, re, sqlite3, time, urllib.error, urllib.parse, urllib.request
 import datetime as dt
 from email.utils import parsedate_to_datetime
 try:  # parser XML seguro contra entity expansion; instalar: pip install defusedxml
@@ -23,6 +23,7 @@ EPSS_URL = "https://api.first.org/data/v1/epss?cve="
 
 
 ERR = {}
+RUN = {}
 MAXAGE = CFG.get("max_age_days", 365)
 
 
@@ -37,6 +38,20 @@ def fail(label, e):
     print(label, "falhou:", e)
 
 
+def _open(req, timeout):
+    """urlopen com 3 tentativas (429/5xx e erros de rede) e espera crescente."""
+    for i in range(3):
+        try:
+            return urllib.request.urlopen(req, timeout=timeout)
+        except urllib.error.HTTPError as e:
+            if e.code not in (429, 500, 502, 503, 504) or i == 2:
+                raise
+        except urllib.error.URLError:
+            if i == 2:
+                raise
+        time.sleep(2 * (i + 1))
+
+
 def http(url, data=None, timeout=30):
     """Pedido com User-Agent; todo o conteudo externo e tratado como nao confiavel."""
     req = urllib.request.Request(url, headers={"User-Agent": "vuln-portal-collector/1.0",
@@ -45,7 +60,7 @@ def http(url, data=None, timeout=30):
         req.add_header("apiKey", os.environ["NVD_API_KEY"])
     if data is not None:
         req.data = json.dumps(data).encode()
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with _open(req, timeout) as r:
         return json.loads(r.read().decode("utf-8", "replace"))
 
 
@@ -64,7 +79,8 @@ def from_kev():
                        summary=clip(v.get("shortDescription"), 560) + (" Known ransomware campaign use." if v.get("knownRansomwareCampaignUse") == "Known" else ""), severity="Alta",
                        cvss=None, kev=1, source="CISA KEV",
                        url=f'https://nvd.nist.gov/vuln/detail/{v["cveID"]}',
-                       published=v.get("dateAdded", ""), mitigation=clip(v.get("requiredAction"), 400))
+                       published=v.get("dateAdded", ""), mitigation=clip(v.get("requiredAction"), 400),
+                       systems="Linux kernel" if v.get("vendorProject", "").lower() == "linux" else None)
 
 
 def from_k8s():
@@ -88,15 +104,17 @@ def from_osv():
         for v in res:
             if not recent((v.get("published") or "")[:10]):
                 continue
-            cves = [a for a in v.get("aliases", []) if a.startswith("CVE-")]
+            cves = osv_cves(v)
             fixed = sorted({ev["fixed"] for a in v.get("affected", []) if a.get("package", {}).get("name") == t["package"]
                             for rg in a.get("ranges", []) for ev in rg.get("events", []) if "fixed" in ev})
-            yield dict(mitigation=("Upgrade %s to a fixed version: %s" % (t["package"], ", ".join(fixed[:5]))) if fixed else None,
-                       id=cves[0] if cves else v["id"], title=clip(v.get("summary") or v["id"], 200),
+            base = dict(systems=osv_systems(v), mitigation=("Upgrade %s to a fixed version: %s" % (t["package"], ", ".join(fixed[:5]))) if fixed else None,
+                       id=None, title=clip(v.get("summary") or v["id"], 200),
                        product=t["package"], category=t.get("category", "Linux"),
                        summary=clip(v.get("details"), 600), severity="Média", cvss=None, kev=0,
                        source=f'OSV ({t["ecosystem"]})', url=f'https://osv.dev/vulnerability/{v["id"]}',
                        published=(v.get("published") or "")[:10])
+            for cid in (cves[:60] or [v["id"]]):  # um registo por CVE do aviso
+                yield {**base, "id": cid}
 
 
 def cat_of(text):
@@ -109,7 +127,7 @@ def cat_of(text):
 
 
 def from_osv_dump():
-    """OSV por ecossistema (Linux kernel, Debian, Ubuntu, Alpine, Alma, Rocky, SUSE, Red Hat, Go filtrado):
+    """OSV por ecossistema (Linux kernel, Debian, Ubuntu, Red Hat, TuxCare, Go filtrado):
     le <eco>/modified_id.csv (mais recentes primeiro) e vai buscar cada <eco>/<ID>.json em paralelo."""
     from concurrent.futures import ThreadPoolExecutor
     base = "https://osv-vulnerabilities.storage.googleapis.com/"
@@ -138,19 +156,94 @@ def from_osv_dump():
             if v.get("withdrawn") or not recent((v.get("published") or "")[:10]): continue
             pk = next((a["package"]["name"] for a in v.get("affected", []) if a.get("package")), e["eco"])
             if e.get("match") and not re.search(e["match"], pk.lower()): continue
-            cves = [a for a in v.get("aliases", []) if a.startswith("CVE-")]
+            cves = osv_cves(v)
             fixed = sorted({ev["fixed"] for a in v.get("affected", []) for rg in a.get("ranges", []) for ev in rg.get("events", []) if "fixed" in ev})
             sv = sevmap.get(str((v.get("database_specific") or {}).get("severity", "")).lower(), "Medium")
-            yield dict(id=cves[0] if cves else v["id"], title=clip(v.get("summary") or v["id"], 200), product=clip(pk, 80),
-                       category="Kernel" if e["eco"] == "Linux" else (cat_of(pk) if e.get("match") else e["category"]),
+            row = dict(systems=osv_systems(v), id=None, title=clip(v.get("summary") or v["id"], 200), product=clip(pk, 80),
+                       category="Kernel" if (e["eco"] == "Linux" or re.match(r"^(linux|kernel)(-|$)", pk.lower())) else (cat_of(pk) if e.get("match") else e["category"]),
                        summary=clip(v.get("details"), 600), severity=sv, cvss=None, kev=0, source=f"OSV ({e['eco']})",
                        url=f'https://osv.dev/vulnerability/{v["id"]}', published=(v.get("published") or "")[:10],
                        mitigation=("Upgrade %s to a fixed version: %s" % (pk, ", ".join(fixed[:5]))) if fixed else None)
+            for cid in (cves[:60] or [v["id"]]):  # um registo por CVE do aviso (ex.: DSA do kernel com dezenas de CVEs)
+                yield {**row, "id": cid}
 
 
 def sev_of(score):
     if score is None: return "Medium"
     return "Critical" if score >= 9 else "High" if score >= 7 else "Medium" if score >= 4 else "Low"
+
+
+DISTROS = {"Debian", "Ubuntu", "Red Hat"}  # sistemas acompanhados (mais TuxCare/CloudLinux, via extra_systems)
+OSMAP = {("redhat", "enterprise_linux"): "Red Hat Enterprise Linux", ("debian", "debian_linux"): "Debian", ("canonical", "ubuntu_linux"): "Ubuntu",
+         ("linux", "linux_kernel"): "Linux kernel"}
+
+
+def _group(pairs):
+    g = {}
+    for name, ver in pairs:
+        g.setdefault(name, [])
+        if ver and ver not in g[name]:
+            g[name].append(ver)
+    return [n + (" " + ", ".join(v[:6]) if v else "") for n, v in g.items()]
+
+
+def osv_cves(v):
+    """CVEs de um registo OSV: 'aliases' e tambem 'upstream' (usado, por exemplo, pelos avisos CLSA da CloudLinux/TuxCare)."""
+    return list(dict.fromkeys(a for a in v.get("aliases", []) + v.get("upstream", []) if a.startswith("CVE-")))
+
+
+def osv_systems(v):
+    """Distribuicoes que acompanham este registo OSV (ecossistemas Debian:12, Ubuntu:22.04:LTS, Red Hat:enterprise_linux:9...)."""
+    pairs = []
+    for a in v.get("affected", []):
+        eco = (a.get("package") or {}).get("ecosystem", "")
+        parts = [x for x in eco.split(":") if x]
+        if not parts:
+            continue
+        if parts[0] == "Linux":
+            pairs.append(("Linux kernel", ""))
+        elif parts[0] == "Red Hat":
+            prod = {"enterprise_linux": "Red Hat Enterprise Linux", "openshift": "OpenShift"}.get(parts[1] if len(parts) > 1 else "", "Red Hat")
+            pairs.append((prod, parts[2] if len(parts) > 2 else ""))
+        elif parts[0] in CFG.get("extra_systems", []):  # ex.: TuxCare:RHEL:7 -> "TuxCare RHEL 7"
+            pairs.append((parts[0] + (" " + parts[1] if len(parts) > 1 else ""), " ".join(parts[2:])))
+        elif parts[0] in DISTROS:
+            pairs.append((parts[0], " ".join(x for x in parts[1:] if x != "Pro")))
+    return "; ".join(_group(pairs)) or None
+
+
+def cpe_systems(c):
+    """Sistemas operativos vulneraveis segundo os CPE do NVD."""
+    pairs = []
+    for cfg in c.get("configurations", []):
+        for node in cfg.get("nodes", []):
+            for m in node.get("cpeMatch", []):
+                p = m.get("criteria", "").split(":")
+                if m.get("vulnerable") and len(p) > 5 and (p[3], p[4]) in OSMAP:
+                    pairs.append((OSMAP[(p[3], p[4])], p[5] if p[5] not in ("*", "-") else ""))
+    return _group(pairs)
+
+
+def cpe_info(c):
+    """Produto real e versoes afetadas a partir dos CPE do NVD (so existem depois de o CVE ser analisado)."""
+    prods, vers = [], []
+    for cfg in c.get("configurations", []):
+        for node in cfg.get("nodes", []):
+            for m in node.get("cpeMatch", []):
+                p = m.get("criteria", "").split(":")
+                if not m.get("vulnerable") or len(p) < 6:
+                    continue
+                name = p[4] if p[3] == p[4] else p[3] + " " + p[4]
+                if name not in prods:
+                    prods.append(name)
+                lo = m.get("versionStartIncluding") or m.get("versionStartExcluding")
+                hi = m.get("versionEndIncluding") or m.get("versionEndExcluding")
+                rng = ((">= " if m.get("versionStartIncluding") else "> ") + lo + " " if lo else "") \
+                    + (("<= " if m.get("versionEndIncluding") else "< ") + hi if hi else "")
+                v = (p[4] + " " + (rng.strip() or (p[5] if p[5] not in ("*", "-") else ""))).strip()
+                if v not in vers:
+                    vers.append(v)
+    return prods, vers
 
 
 def nvd_item(it, kw):
@@ -159,9 +252,36 @@ def nvd_item(it, kw):
         if m.get(k):
             score = m[k][0]["cvssData"]["baseScore"]; break
     desc = next((d["value"] for d in c.get("descriptions", []) if d["lang"] == "en"), "")
-    return dict(id=c["id"], title=clip(desc, 200), product=kw["q"], category=kw["category"], summary=clip(desc, 600),
-                severity=sev_of(score), cvss=score, kev=0, source="NVD",
-                url=f'https://nvd.nist.gov/vuln/detail/{c["id"]}', published=c.get("published", "")[:10])
+    prods, vers = cpe_info(c)
+    refs = [r["url"] for r in c.get("references", []) if {"Patch", "Vendor Advisory"} & set(r.get("tags", []))][:2]
+    return dict(id=c["id"], title=clip(desc, 200), product=", ".join(prods[:2]) or kw["q"], category=kw["category"],
+                summary=clip(desc, 600), severity=sev_of(score), cvss=score, kev=0, source="NVD",
+                url=f'https://nvd.nist.gov/vuln/detail/{c["id"]}', published=c.get("published", "")[:10],
+                affected="; ".join(vers[:8]) or None, systems="; ".join(cpe_systems(c)) or None,
+                mitigation=("See vendor or patch references: " + ", ".join(refs)) if refs else None)
+
+
+def enrich(db):
+    """Preenche CVSS (e versoes afetadas) pelo ID do CVE, KEV primeiro. Sem chave NVD so faz 40 por execucao."""
+    key = bool(os.environ.get("NVD_API_KEY"))
+    q = ("SELECT id FROM vulns WHERE cvss IS NULL AND id LIKE 'CVE-%' GROUP BY id "
+         "ORDER BY MAX(kev) DESC, MAX(published) DESC LIMIT ?")
+    for (cid,) in db.execute(q, (400 if key else 40,)).fetchall():
+        try:
+            res = http("https://services.nvd.nist.gov/rest/json/cves/2.0?cveId=" + cid)
+        except Exception as e:
+            fail("NVD", e); break
+        time.sleep(0.7 if key else 6)
+        for it in res.get("vulnerabilities", []):
+            item = nvd_item(it, {"q": "", "category": ""})
+            if item["cvss"] is not None:
+                db.execute("UPDATE vulns SET cvss=?, severity=? WHERE id=? AND cvss IS NULL", (item["cvss"], item["severity"], cid))
+            if item["affected"]:
+                db.execute("UPDATE vulns SET affected=? WHERE id=? AND affected IS NULL", (item["affected"], cid))
+            if item["systems"]:
+                db.execute("UPDATE vulns SET systems=? WHERE id=? AND systems IS NULL", (item["systems"], cid))
+    db.commit()
+
 
 
 def from_nvd():
@@ -212,7 +332,7 @@ def from_ghsa():
 
 def text_of(url):
     req = urllib.request.Request(url, headers={"User-Agent": "vuln-portal-collector/1.0"})
-    with urllib.request.urlopen(req, timeout=30) as r:
+    with _open(req, 30) as r:
         return r.read(8_000_000).decode("utf-8", "replace")
 
 
@@ -281,7 +401,8 @@ def from_redhat():
         yield dict(id=v["CVE"], title=clip(v.get("bugzilla_description"), 200), product=clip(" ".join(v.get("affected_packages", []) or [])[:80], 80),
                    category=cat_of(blob), summary=clip(v.get("bugzilla_description"), 600),
                    severity=sev.get((v.get("severity") or "").lower(), "Medium"), cvss=v.get("cvss3_score"), kev=0,
-                   source="Red Hat Security Data", url=v.get("resource_url", ""), published=(v.get("public_date") or "")[:10])
+                   source="Red Hat Security Data", url=v.get("resource_url", ""), published=(v.get("public_date") or "")[:10],
+                   systems="Red Hat (RHEL and related)", affected="; ".join((v.get("affected_packages") or [])[:4]) or None)
 
 
 def to_date(s):
@@ -316,7 +437,7 @@ def from_rss():
             yield dict(id=cves[0] if cves else tid.group(0) if tid else "RSS-" + hashlib.sha1(title.encode()).hexdigest()[:10],
                        title=clip(title, 200), product=f["name"], category=cat,
                        summary=clip(re.sub(r"<[^>]+>", " ", htmllib.unescape(body)), 600), severity="Medium", cvss=None, kev=0,
-                       source=f["name"], url=link, published=to_date(when))
+                       source=f["name"], url=link, published=to_date(when), systems=f.get("systems"))
             n += 1
             if n >= f.get("limit", 50):
                 break
@@ -359,10 +480,28 @@ def epss(ids):
     return out
 
 
+def site_url():
+    s = os.environ.get("SITE_URL") or "https://vulnerabilities-linux.com/"
+    return s if s.endswith("/") else s + "/"
+
+
+def write_static(outdir):
+    """robots.txt, sitemap.xml e URL absoluto nas etiquetas de partilha da pagina (marcador __SITE_URL__)."""
+    site = site_url(); today = dt.date.today().isoformat()
+    open(os.path.join(outdir, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nSitemap: {site}sitemap.xml\n")
+    open(os.path.join(outdir, "sitemap.xml"), "w").write(
+        '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        + "".join(f"<url><loc>{site}{p}</loc><lastmod>{today}</lastmod></url>" for p in ("", "privacy.html")) + "</urlset>")
+    idx = os.path.join(outdir, "index.html")
+    if os.path.exists(idx):
+        s = open(idx, encoding="utf-8").read()
+        open(idx, "w", encoding="utf-8").write(s.replace("__SITE_URL__", site))
+
+
 def write_feed(rows, path):
     """RSS 2.0 com as KEV e criticas mais recentes."""
     from xml.sax.saxutils import escape as x
-    site = os.environ.get("SITE_URL", "https://vulnerabilities-linux.com/")
+    site = site_url()
     out = ['<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Linux, Cloud-Native &amp; SAP Vulnerability Intelligence</title>'
            f"<link>{x(site)}</link><description>Exploited and critical vulnerabilities</description>"]
     for r in [r for r in rows if r["kev"] or r["severity"] == "Critical"][:50]:
@@ -381,11 +520,12 @@ def main():
     db = sqlite3.connect(DB)
     db.execute("""CREATE TABLE IF NOT EXISTS vulns(id TEXT, source TEXT, title TEXT, product TEXT,
       category TEXT, summary TEXT, severity TEXT, cvss REAL, kev INT, epss REAL, url TEXT,
-      published TEXT, first_seen TEXT, mitigation TEXT, PRIMARY KEY(id, source))""")
-    try:
-        db.execute("ALTER TABLE vulns ADD COLUMN mitigation TEXT")  # migracao de bases antigas
-    except sqlite3.OperationalError:
-        pass
+      published TEXT, first_seen TEXT, mitigation TEXT, affected TEXT, systems TEXT, PRIMARY KEY(id, source))""")
+    for col in ("mitigation", "affected", "systems"):  # migracao de bases antigas
+        try:
+            db.execute(f"ALTER TABLE vulns ADD COLUMN {col} TEXT")
+        except sqlite3.OperationalError:
+            pass
     now = dt.datetime.utcnow().isoformat(timespec="seconds")
     new_kev = []
     for fn in (from_kev, from_k8s, from_osv, from_osv_dump, from_nvd, from_ghsa, from_sap, from_redhat, from_rss, from_euvd):
@@ -394,26 +534,37 @@ def main():
         except Exception as e:
             fail(LABEL.get(fn.__name__, fn.__name__), e); continue
         for v in items:
+            RUN[v["source"]] = RUN.get(v["source"], 0) + 1
             exists = db.execute("SELECT 1 FROM vulns WHERE id=? AND source=?", (v["id"], v["source"])).fetchone()
             if not exists:
-                db.execute("INSERT INTO vulns(id,source,title,product,category,summary,severity,cvss,kev,epss,url,published,first_seen,mitigation) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                db.execute("INSERT INTO vulns(id,source,title,product,category,summary,severity,cvss,kev,epss,url,published,first_seen,mitigation,affected,systems) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                            (v["id"], v["source"], v["title"], v["product"], v["category"], v["summary"],
-                            v["severity"], v["cvss"], v["kev"], None, v["url"], v["published"], now, v.get("mitigation")))
+                            v["severity"], v["cvss"], v["kev"], None, v["url"], v["published"], now, v.get("mitigation"), v.get("affected"), v.get("systems")))
                 if v["kev"]:
                     new_kev.append(v)
+    if CFG.get("sap_months", 0) and not any(s.startswith("SAP") for s in RUN):
+        fail("SAP Security Patch Day", "no notes parsed in this run (page layout may have changed)")
+    enrich(db)
     db.commit()
     scores = epss(r[0] for r in db.execute("SELECT DISTINCT id FROM vulns"))
     for cid, s in scores.items():
         db.execute("UPDATE vulns SET epss=? WHERE id=?", (s, cid))
     db.commit()
     cut = (dt.date.today() - dt.timedelta(days=MAXAGE)).isoformat()
-    rows = db.execute("""SELECT id,source,title,product,category,summary,severity,cvss,kev,epss,url,published,mitigation
+    rows = db.execute("""SELECT id,source,title,product,category,summary,severity,cvss,kev,epss,url,published,mitigation,affected,systems
         FROM vulns WHERE published >= ? ORDER BY kev DESC, COALESCE(epss,0) DESC, published DESC LIMIT 8000""", (cut,)).fetchall()
-    keys = ["id", "source", "title", "product", "category", "summary", "severity", "cvss", "kev", "epss", "url", "published", "mitigation"]
+    keys = ["id", "source", "title", "product", "category", "summary", "severity", "cvss", "kev", "epss", "url", "published", "mitigation", "affected", "systems"]
+    db.execute("CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT)")
+    last = db.execute("SELECT v FROM meta WHERE k='last_total'").fetchone()
+    last = int(last[0]) if last else 0
+    if last >= 100 and len(rows) < last * 0.5:  # queda brusca: nao publicar, mantem-se a ultima versao boa
+        print(f"ABORTADO: {len(rows)} registos contra {last} na execucao anterior"); sys.exit(3)
+    db.execute("INSERT OR REPLACE INTO meta VALUES('last_total', ?)", (str(len(rows)),)); db.commit()
     json.dump([dict(zip(keys, r)) for r in rows], open(OUT, "w"), ensure_ascii=False)
     outdir = os.path.dirname(OUT) or "."
-    json.dump({"generated_at": now, "total": len(rows), "errors": ERR}, open(os.path.join(outdir, "status.json"), "w"))
+    json.dump({"generated_at": now, "total": len(rows), "errors": ERR, "run": RUN}, open(os.path.join(outdir, "status.json"), "w"))
     write_feed([dict(zip(keys, r)) for r in rows], os.path.join(outdir, "feed.xml"))
+    write_static(outdir)
     print(f"{len(rows)} registos exportados; {len(new_kev)} novos KEV")
     if not rows:
         sys.exit(1)  # nenhuma fonte respondeu: o workflow falha de forma visivel
