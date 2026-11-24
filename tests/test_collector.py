@@ -73,6 +73,29 @@ class Tests(unittest.TestCase):
             c.text_of, c.http = old
         self.assertEqual(out, [("CVE-2099-1", "Kernel", "Debian 12"), ("CVE-2099-2", "Kernel", "Debian 12"), ("CVE-2099-3", "Linux", "Ubuntu 22.04 LTS")])
 
+
+    def test_aggregate_rows_deduplicates_sources(self):
+        rows = [
+            ("CVE-2026-1234", "OSV (Debian:12)", "OSV title", "openssh", "Linux", "OSV summary",
+             "Medium", None, 0, 0.42, "https://osv.dev/vulnerability/X", "2026-11-20", "Upgrade openssh", "Debian 12", "Debian 12"),
+            ("CVE-2026-1234", "CISA KEV", "KEV title", "openssh", "Linux", "KEV summary",
+             "Alta", None, 1, 0.42, "https://nvd.nist.gov/vuln/detail/CVE-2026-1234", "2026-11-21", "Apply vendor fix", None, None),
+            ("cve-2026-1234", "NVD", "NVD title", "openssh", "Linux", "NVD summary",
+             "High", 8.1, 0, 0.42, "https://nvd.nist.gov/vuln/detail/CVE-2026-1234", "2026-11-22", None,
+             "9.x < 9.9", "Ubuntu 22.04"),
+        ]
+        out = c.aggregate_rows(rows)
+        self.assertEqual(len(out), 1)
+        item = out[0]
+        self.assertEqual(item["id"], "CVE-2026-1234")
+        self.assertIn("OSV (Debian:12)", item["source"])
+        self.assertIn("CISA KEV", item["source"])
+        self.assertIn("NVD", item["source"])
+        self.assertEqual(item["kev"], 1)
+        self.assertEqual(item["cvss"], 8.1)
+        self.assertIn("Debian 12", item["systems"])
+        self.assertIn("Ubuntu 22.04", item["systems"])
+
     def test_category(self):
         self.assertEqual(c.cat_of("SAP NetWeaver"), "SAP")
         self.assertEqual(c.cat_of("kubelet flaw"), "Kubernetes")
