@@ -568,13 +568,20 @@ def aggregate_rows(rows):
         # O estado KEV é verdadeiro se qualquer fonte o indicar.
         g["kev"] = max(int(g.get("kev") or 0), int(item.get("kev") or 0))
 
-        # Conserva o CVSS mais elevado encontrado entre as fontes.
-        scores = [x for x in (g.get("cvss"), item.get("cvss")) if x is not None]
-        if scores:
-            g["cvss"] = max(float(x) for x in scores)
+        # O NVD é a fonte prioritária para CVSS. Se não houver NVD, usa o maior score disponível.
+        if item.get("source") == "NVD" and item.get("cvss") is not None:
+            g["cvss"] = float(item["cvss"])
             g["severity"] = sev_of(g["cvss"])
-        elif severity_rank(item.get("severity")) > severity_rank(g.get("severity")):
-            g["severity"] = item.get("severity")
+        elif g.get("source") and "NVD" not in str(g.get("source")):
+            scores = [x for x in (g.get("cvss"), item.get("cvss")) if x is not None]
+            if scores:
+                g["cvss"] = max(float(x) for x in scores)
+                g["severity"] = sev_of(g["cvss"])
+            elif severity_rank(item.get("severity")) > severity_rank(g.get("severity")):
+                g["severity"] = item.get("severity")
+        elif g.get("cvss") is None and item.get("cvss") is not None:
+            g["cvss"] = float(item["cvss"])
+            g["severity"] = sev_of(g["cvss"])
 
         # EPSS é por CVE; usa o maior valor disponível.
         epss_values = [x for x in (g.get("epss"), item.get("epss")) if x is not None]
