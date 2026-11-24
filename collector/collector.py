@@ -659,10 +659,12 @@ def main():
     if last >= 100 and len(rows) < last * 0.5:  # queda brusca: nao publicar, mantem-se a ultima versao boa
         print(f"ABORTADO: {len(rows)} registos contra {last} na execucao anterior"); sys.exit(3)
     db.execute("INSERT OR REPLACE INTO meta VALUES('last_total', ?)", (str(len(rows)),)); db.commit()
-    json.dump([dict(zip(keys, r)) for r in rows], open(OUT, "w"), ensure_ascii=False)
+    # aggregate_rows() devolve dicionarios completos; não voltar a fazer zip dos nomes
+    # das colunas com as chaves do dicionário, pois isso corromperia o JSON público.
+    json.dump(rows, open(OUT, "w"), ensure_ascii=False)
     outdir = os.path.dirname(OUT) or "."
     json.dump({"generated_at": now, "total": len(rows), "errors": ERR, "run": RUN}, open(os.path.join(outdir, "status.json"), "w"))
-    write_feed([dict(zip(keys, r)) for r in rows], os.path.join(outdir, "feed.xml"))
+    write_feed(rows, os.path.join(outdir, "feed.xml"))
     write_static(outdir)
     print(f"{len(rows)} registos exportados; {len(new_kev)} novos KEV")
     if not rows:
