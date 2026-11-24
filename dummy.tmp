@@ -1,0 +1,1 @@
+        blob = ((v.get("bugzilla_description") or "") + " " + " ".join(v.get("affected_packages", []) or [])).lower()
