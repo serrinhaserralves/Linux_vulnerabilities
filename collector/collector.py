@@ -516,6 +516,95 @@ def write_feed(rows, path):
     open(path, "w", encoding="utf-8").write("".join(out) + "</channel></rss>")
 
 
+def aggregate_rows(rows):
+    """Agrega registos de varias fontes para publicar apenas um registo por CVE."""
+    groups = {}
+
+    def add_unique(values):
+        out = []
+        seen = set()
+        for value in values:
+            if not value:
+                continue
+            for part in str(value).split(";"):
+                part = part.strip()
+                if part and part not in seen:
+                    seen.add(part)
+                    out.append(part)
+        return "; ".join(out) or None
+
+    def severity_rank(value):
+        return {"Critical": 4, "Alta": 3, "High": 3, "Média": 2, "Medium": 2, "Low": 1}.get(value, 0)
+
+    for row in rows:
+        item = dict(zip(
+            ["id", "source", "title", "product", "category", "summary", "severity",
+             "cvss", "kev", "epss", "url", "published", "mitigation", "affected", "systems"],
+            row
+        ))
+        cid = (item["id"] or "").strip().upper()
+        if not cid:
+            continue
+
+        if cid not in groups:
+            groups[cid] = item
+            groups[cid]["id"] = cid
+            continue
+
+        g = groups[cid]
+
+        # Mantém todas as fontes sem criar registos duplicados no portal.
+        g["source"] = add_unique([g.get("source"), item.get("source")])
+
+        # Prefere a informação mais completa.
+        for field in ("title", "summary", "product"):
+            if len(str(item.get(field) or "")) > len(str(g.get(field) or "")):
+                g[field] = item.get(field)
+
+        # Mantém a categoria mais específica quando existe.
+        if g.get("category") in (None, "", "Linux") and item.get("category"):
+            g["category"] = item["category"]
+
+        # O estado KEV é verdadeiro se qualquer fonte o indicar.
+        g["kev"] = max(int(g.get("kev") or 0), int(item.get("kev") or 0))
+
+        # Conserva o CVSS mais elevado encontrado entre as fontes.
+        scores = [x for x in (g.get("cvss"), item.get("cvss")) if x is not None]
+        if scores:
+            g["cvss"] = max(float(x) for x in scores)
+            g["severity"] = sev_of(g["cvss"])
+        elif severity_rank(item.get("severity")) > severity_rank(g.get("severity")):
+            g["severity"] = item.get("severity")
+
+        # EPSS é por CVE; usa o maior valor disponível.
+        epss_values = [x for x in (g.get("epss"), item.get("epss")) if x is not None]
+        if epss_values:
+            g["epss"] = max(float(x) for x in epss_values)
+
+        g["systems"] = add_unique([g.get("systems"), item.get("systems")])
+        g["affected"] = add_unique([g.get("affected"), item.get("affected")])
+        g["mitigation"] = add_unique([g.get("mitigation"), item.get("mitigation")])
+
+        # Dá preferência ao URL do NVD; caso contrário conserva um URL válido.
+        if item.get("source") == "NVD" or not g.get("url"):
+            g["url"] = item.get("url") or g.get("url")
+
+        # Mantém a data mais antiga/publicada, quando disponível.
+        dates = [x for x in (g.get("published"), item.get("published")) if x]
+        if dates:
+            g["published"] = min(dates)
+
+    return sorted(
+        groups.values(),
+        key=lambda r: (
+            -int(r.get("kev") or 0),
+            -(float(r.get("epss") or 0)),
+            -(float(r.get("cvss") or 0)),
+            r.get("published") or ""
+        )
+    )
+
+
 def main():
     db = sqlite3.connect(DB)
     db.execute("""CREATE TABLE IF NOT EXISTS vulns(id TEXT, source TEXT, title TEXT, product TEXT,
@@ -551,8 +640,11 @@ def main():
         db.execute("UPDATE vulns SET epss=? WHERE id=?", (s, cid))
     db.commit()
     cut = (dt.date.today() - dt.timedelta(days=MAXAGE)).isoformat()
-    rows = db.execute("""SELECT id,source,title,product,category,summary,severity,cvss,kev,epss,url,published,mitigation,affected,systems
-        FROM vulns WHERE published >= ? ORDER BY kev DESC, COALESCE(epss,0) DESC, published DESC LIMIT 8000""", (cut,)).fetchall()
+    raw_rows = db.execute("""SELECT id,source,title,product,category,summary,severity,cvss,kev,epss,url,published,mitigation,affected,systems
+        FROM vulns WHERE published >= ? ORDER BY kev DESC, COALESCE(epss,0) DESC, published DESC LIMIT 12000""", (cut,)).fetchall()
+
+    # Uma única entrada pública por CVE, mesmo quando várias fontes o reportam.
+    rows = aggregate_rows(raw_rows)[:8000]
     keys = ["id", "source", "title", "product", "category", "summary", "severity", "cvss", "kev", "epss", "url", "published", "mitigation", "affected", "systems"]
     db.execute("CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT)")
     last = db.execute("SELECT v FROM meta WHERE k='last_total'").fetchone()
