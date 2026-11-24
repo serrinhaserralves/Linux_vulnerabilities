@@ -5,16 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Linux, Cloud-Native &amp; SAP Vulnerability Intelligence</title>
 <meta name="description" content="Recent vulnerabilities for Linux, Kubernetes, containers and SAP, prioritised by active exploitation, with mitigations.">
-<meta property="og:title" content="Linux, Cloud-Native &amp; SAP Vulnerability Intelligence"><meta property="og:description" content="Exploited and critical vulnerabilities with mitigations."><meta name="theme-color" content="#5b5bd6">
+<meta property="og:title" content="Linux, Cloud-Native &amp; SAP Vulnerability Intelligence"><meta property="og:description" content="Exploited and critical vulnerabilities with mitigations."><meta name="theme-color" content="#0b0e1a"><meta name="color-scheme" content="dark">
 <link rel="canonical" href="__SITE_URL__"><meta property="og:type" content="website"><meta property="og:url" content="__SITE_URL__"><meta property="og:image" content="__SITE_URL__og.png"><meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%235b5bd6'/%3E%3Ctext x='16' y='21' font-size='13' font-family='monospace' font-weight='700' fill='white' text-anchor='middle'%3ELV%3C/text%3E%3C/svg%3E">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
---bg:#f3f5fb;--surface:#fff;--text:#161a2e;--muted:#5f6784;--line:#e1e5f2;--accent:#5b5bd6;--accent2:#0ea5a4;--accent-bg:#ecebff;
---crit:#d92d3a;--high:#e5640c;--med:#b07d00;--low:#3558d6;--kev:#8e3fc4;--ok:#16a34a;--warn:#b45309;--info:#0b7bd1;--g1:#5b5bd6;--g2:#0ea5a4;--shadow:0 1px 2px rgba(22,26,46,.05),0 4px 14px rgba(22,26,46,.06)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0b0e1a;--surface:#141829;--text:#e8eaf6;--muted:#9aa2c4;--line:#252b45;--accent:#8b8bff;--accent2:#2dd4bf;--accent-bg:#1c2040;--crit:#ff6b75;--high:#ff9b4a;--med:#f5d24a;--low:#7ea2ff;--kev:#c78cf5;--ok:#4ade80;--warn:#fbbf24;--info:#60a5fa;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25)}}
-:root[data-theme="dark"]{color-scheme:dark;--bg:#0b0e1a;--surface:#141829;--text:#e8eaf6;--muted:#9aa2c4;--line:#252b45;--accent:#8b8bff;--accent2:#2dd4bf;--accent-bg:#1c2040;--crit:#ff6b75;--high:#ff9b4a;--med:#f5d24a;--low:#7ea2ff;--kev:#c78cf5;--ok:#4ade80;--warn:#fbbf24;--info:#60a5fa;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25)}
+:root{box-sizing:border-box;color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#0b0e1a;--surface:#141829;--text:#e8eaf6;--muted:#9aa2c4;--line:#252b45;--accent:#8b8bff;--accent2:#2dd4bf;--accent-bg:#1c2040;
+--crit:#ff6b75;--high:#ff9b4a;--med:#f5d24a;--low:#7ea2ff;--kev:#c78cf5;--ok:#4ade80;--warn:#fbbf24;--info:#60a5fa;--g1:#5b5bd6;--g2:#0ea5a4;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25)}
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -74,6 +72,7 @@ h2{font-size:17px;margin:30px 0 4px}
 .c-ok{--cc:var(--ok)}.c-wa{--cc:var(--warn)}.c-pu{--cc:var(--kev)}.c-in{--cc:var(--info)}.c-te{--cc:var(--accent2)}.c-no{--cc:var(--crit)}.c-un{--cc:var(--muted)}
 .lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-4px 0 12px;color:var(--muted);font-size:12px}.lg .fx{margin:0}
 th[data-k]{cursor:pointer;user-select:none;white-space:nowrap}th[data-k]:hover{color:var(--accent)}th[data-dir="1"]::after{content:" ▲";color:var(--accent)}th[data-dir="-1"]::after{content:" ▼";color:var(--accent)}
+#q{flex:1 1 100%;font-size:15px;padding:12px 14px}.lookup{display:flex;flex-wrap:wrap;gap:6px}
 .foot a{color:var(--accent)}
 .sysbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-2px 0 12px;color:var(--muted);font-size:12px}
 .sysb{border:1px solid color-mix(in srgb,var(--sc,var(--muted)) 40%,var(--line));background:var(--surface);color:var(--sc,var(--muted));border-radius:99px;padding:3px 11px;cursor:pointer;font:inherit;font-size:12px}.sysb small{opacity:.7}.sysb.on{background:color-mix(in srgb,var(--sc,var(--accent)) 18%,var(--surface));font-weight:700}
@@ -100,7 +99,7 @@ tr.r:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 <div class="stats" id="stats"></div>
 <div class="demo" id="demo">Snapshot of recent threats compiled on 21 November 2026 from public reporting (CISA KEV, SAP Patch Day, Kubernetes and oss-security announcements). When hosted with the collector, this page loads live data from vulns.json.</div>
 <div class="tools">
-<input id="q" type="search" placeholder="Search CVE ID, product or keyword…">
+<input id="q" type="search" placeholder="Search a CVE (e.g. CVE-2024-3094), product, distro or keyword   ( / )" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Search">
 <select id="sev"><option value="">All severities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
 <select id="fx"><option value="">All fix states</option><option value="fix">Patch available</option><option value="workaround">Mitigation only</option><option value="none">No fix</option><option value="verify">Verify with vendor</option><option value="unknown">Unknown</option></select>
 <label class="k"><input type="checkbox" id="kev" style="flex:none;min-width:0"> Actively exploited only</label>
@@ -115,7 +114,7 @@ tr.r:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 <div class="tbl"><table>
 <thead><tr><th data-k="id" tabindex="0" role="button">CVE</th><th data-k="t" tabindex="0" role="button">Vulnerability</th><th data-k="p" tabindex="0" role="button">Component</th><th data-k="s" tabindex="0" role="button">Severity</th><th data-k="v" tabindex="0" role="button">CVSS</th><th data-k="pri" tabindex="0" role="button">Priority</th><th data-k="d" tabindex="0" role="button">Published</th></tr></thead>
 <tbody id="rows"></tbody></table></div>
-<div class="lg" style="margin:10px 0"><span id="cnt"></span><button class="tab" id="more" style="display:none">Load more</button></div>
+<div class="lg" style="margin:10px 0"><span id="cnt"></span><span id="also"></span><button class="tab" id="more" style="display:none">Load more</button></div>
 <h2>Data sources</h2>
 <p class="sub" id="srcsub"></p>
 <div class="src" id="src"></div>
@@ -189,6 +188,10 @@ $("stats").innerHTML=[["Tracked",D.length],["Critical",n(d=>d.s==="Critical")],[
 function tabs(){$("tabs").innerHTML=cats.map(c=>`<button class="tab ${c===cat?"on":""}" data-c="${c}">${c}</button>`).join("");
 document.querySelectorAll("#tabs .tab").forEach(b=>b.onclick=()=>{cat=b.dataset.c;try{history.replaceState(null,"",cat==="All"?location.pathname:"#"+cat.toLowerCase())}catch(_){}tabs();render()})}
 let ST=null,CNT={},page=1,sk=null,sd=1;const PS=25;
+const normQ=s=>{s=s.toLowerCase().trim().replace(/\bcve[\s_-]*(\d{4})[\s_-]*(\d{4,7})\b/g,"cve-$1-$2");return /^\d{4}-\d{4,7}$/.test(s)?"cve-"+s:s};
+const hay=d=>d._h||(d._h=[d.id,d.t,d.p,d.c,d.x,d.a||"",sysTxt(d),[...(d.ss||[])].join(" "),d.m?d.m.st.map(z=>z[1]).join(" "):""].join(" ").toLowerCase());
+const LK=[["NVD","https://nvd.nist.gov/vuln/detail/"],["CVE.org","https://www.cve.org/CVERecord?id="],["OSV","https://osv.dev/vulnerability/"],["Red Hat","https://access.redhat.com/security/cve/"],["Ubuntu","https://ubuntu.com/security/"],["Debian","https://security-tracker.debian.org/tracker/"]];
+const lookupHtml=id=>`<tr><td colspan="7"><div class="mit un"><div class="mh"><b>${id}</b><span class="fx un">Not in this dataset</span></div><p class="muted" style="margin:0 0 8px">The dashboard only holds recent entries for Linux, Kubernetes, containers and SAP. Look it up directly:</p><div class="lookup">${LK.map(x=>`<a class="tab" style="text-decoration:none" href="${x[1]+id}" target="_blank" rel="noopener">${x[0]}</a>`).join("")}</div></div></td></tr>`;
 const cv=s=>{const m=/^CVE-(\d{4})-(\d+)$/.exec(s);return m?m[1]*1e8+(+m[2]):0};
 const CMP={id:(a,b)=>cv(a.id)-cv(b.id),t:(a,b)=>a.t.localeCompare(b.t),p:(a,b)=>a.p.localeCompare(b.p),s:(a,b)=>O[a.s]-O[b.s],v:(a,b)=>(a.v||0)-(b.v||0),pri:(a,b)=>pri(a)-pri(b),d:(a,b)=>a.d.localeCompare(b.d)};
 const DEF={id:-1,t:1,p:1,s:1,v:-1,pri:-1,d:-1};
@@ -199,22 +202,24 @@ function prods(){const n={};D.forEach(d=>n[d.p]=(n[d.p]||0)+1);$("prd").innerHTM
 function fromHash(){const h=decodeURIComponent(location.hash.slice(1)).toLowerCase();if(h==="kev")$("kev").checked=true;else{const c=cats.find(x=>x.toLowerCase()===h);if(c)cat=c}}
 try{$("stack").value=localStorage.getItem("stack")||""}catch(_){}
 function render(keep){if(keep!==true)page=1;
-const q=$("q").value.toLowerCase(),s=$("sev").value,k=$("kev").checked,p=$("prd").value,ag=+$("age").value,mine=$("mine").checked,fx=$("fx").value;
+const qn=normQ($("q").value),terms=qn.split(/\s+/).filter(Boolean),idq=/^cve-\d{4}-\d{4,7}$/.test(qn),match=d=>idq?d.id.toLowerCase()===qn:terms.every(t=>hay(d).includes(t)),s=$("sev").value,k=$("kev").checked,p=$("prd").value,ag=+$("age").value,mine=$("mine").checked,fx=$("fx").value;
 const st=$("stack").value.toLowerCase().split(",").map(x=>x.trim()).filter(Boolean);
 const mx=D.reduce((a,d)=>d.d>a?d.d:a,"0"),lim=ag?new Date(new Date(mx)-ag*864e5).toISOString().slice(0,10):"";
-const base=D.filter(d=>(cat==="All"||d.c===cat)&&(!s||d.s===s)&&(!k||d.k)&&(!fx||fxs(d)===fx)&&(!p||d.p===p)&&(!lim||d.d>=lim)&&(!mine||!st.length||st.some(x=>(d.p+" "+d.t+" "+sysTxt(d)).toLowerCase().includes(x)))&&(!q||(d.id+d.t+d.p+d.c+" "+sysTxt(d)).toLowerCase().includes(q)));
-sysBar(base);const sel=cur(),r=sel.size?base.filter(d=>fams(d).some(f=>sel.has(f))):base;
+const base=D.filter(d=>match(d)&&(idq||((cat==="All"||d.c===cat)&&(!s||d.s===s)&&(!k||d.k)&&(!fx||fxs(d)===fx)&&(!p||d.p===p)&&(!lim||d.d>=lim)&&(!mine||!st.length||st.some(x=>(d.p+" "+d.t+" "+sysTxt(d)).toLowerCase().includes(x))))));
+sysBar(base);const sel=idq?new Set():cur(),r=sel.size?base.filter(d=>fams(d).some(f=>sel.has(f))):base;
 const so=$("srt").value;
 r.sort(sk?(a,b)=>CMP[sk](a,b)*sd||b.d.localeCompare(a.d):so==="new"?(a,b)=>b.d.localeCompare(a.d)||pri(b)-pri(a):so==="cvss"?(a,b)=>(b.v||0)-(a.v||0):(a,b)=>pri(b)-pri(a)||b.d.localeCompare(a.d));
 const sh=r.slice(0,page*PS);$("cnt").textContent="Showing "+sh.length+" of "+r.length;$("more").style.display=sh.length<r.length?"":"none";
+if(terms.length&&!idq&&cat!=="All"){const o={};D.forEach(d=>{if(d.c!==cat&&match(d))o[d.c]=(o[d.c]||0)+1});const ks=Object.keys(o);$("also").innerHTML=ks.length?" · also in: "+ks.map(c=>`<button class="tab" data-go="${e(c)}">${e(c)} ${o[c]}</button>`).join(" "):""}else $("also").innerHTML="";
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{cat=b.dataset.go;tabs();render()});
 $("rows").innerHTML=sh.map(d=>{const pl=plab(d);return `<tr class="r" tabindex="0" role="button" aria-expanded="${open===d.id}" data-i="${e(d.id)}"><td class="id" data-l="CVE">${e(d.id)}</td><td data-l="Vulnerability">${e(d.t)} ${d.k?'<span class="pill KEV">KEV</span>':""}${fixBadge(d)}<div>${sysChips(d,4)}</div></td><td class="muted" data-l="Component">${e(d.p)}<br><small>${e(d.c)}</small></td><td data-l="Severity"><span class="pill ${d.s}">${d.s}</span></td><td data-l="CVSS">${d.v==null?"\u2014":d.v.toFixed(1)}</td><td data-l="Priority"><span class="pill ${pl[1]}">${pl[0]}</span></td><td class="muted" data-l="Published">${e(d.d)}</td></tr>`
-+(open===d.id?`<tr class="det"><td></td><td colspan="6">${e(d.x)}${d.a?` <b>Affected versions:</b> ${e(d.a)}.`:""}${d.e!=null?` <b>EPSS:</b> ${(d.e*100).toFixed(1)}%.`:""}${d.ss&&d.ss.size>1?` <b>Seen in:</b> ${[...d.ss].map(z=>e(z)).join(", ")}.`:""} <a href="${e(d.u||("https://nvd.nist.gov/vuln/detail/"+d.id))}" target="_blank" rel="noopener">View source</a>${d.sy&&d.sy.length?`<div style="margin-top:10px"><b>Affected systems:</b> ${sysChips(d,99)}</div>`:""}${mitHtml(d)}</td></tr>`:"")}).join("")||'<tr><td colspan="7" class="muted">No results match your filters.</td></tr>';
++(open===d.id?`<tr class="det"><td></td><td colspan="6">${e(d.x)}${d.a?` <b>Affected versions:</b> ${e(d.a)}.`:""}${d.e!=null?` <b>EPSS:</b> ${(d.e*100).toFixed(1)}%.`:""}${d.ss&&d.ss.size>1?` <b>Seen in:</b> ${[...d.ss].map(z=>e(z)).join(", ")}.`:""} <a href="${e(d.u||("https://nvd.nist.gov/vuln/detail/"+d.id))}" target="_blank" rel="noopener">View source</a>${d.sy&&d.sy.length?`<div style="margin-top:10px"><b>Affected systems:</b> ${sysChips(d,99)}</div>`:""}${mitHtml(d)}</td></tr>`:"")}).join("")||(idq?lookupHtml(qn.toUpperCase()):'<tr><td colspan="7" class="muted">No results match your filters.</td></tr>');
 document.querySelectorAll("tr.r").forEach(t=>{const f=()=>{open=open===t.dataset.i?null:t.dataset.i;render(true)};t.onclick=f;t.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();f()}}})}
 $("more").onclick=()=>{page++;render(true)};
 $("csv").onclick=()=>{const cl=v=>{v=String(v);if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
 const t=[["id","title","component","category","severity","cvss","kev","published","url","systems"],...D.map(d=>[d.id,d.t,d.p,d.c,d.s,d.v??"",d.k,d.d,d.u||"",(d.sy||[]).join("; ")])].map(r=>r.map(cl).join(",")).join("\n");
 const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/csv"}));a.download="vulnerabilities.csv";a.click()};
-$("q").oninput=render;$("sev").onchange=render;$("fx").onchange=render;$("kev").onchange=render;["srt","prd","age","mine"].forEach(i=>$(i).onchange=render);$("stack").oninput=()=>{try{localStorage.setItem("stack",$("stack").value)}catch(_){}render()};addEventListener("hashchange",()=>{fromHash();tabs();render()});$("srt").onchange=()=>{sk=null;heads();render()};document.querySelectorAll("th[data-k]").forEach(h=>{const f=()=>{const k=h.dataset.k;if(sk===k)sd=-sd;else{sk=k;sd=DEF[k]}heads();render()};h.onclick=f;h.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();f()}}});prods();fromHash();stats();tabs();render();renderSrc({},false);$("lg").innerHTML="<span>Fix status:</span>"+Object.values(FX).map(f=>`<span class="fx ${f[1]}">${f[0]}</span>`).join("");
+$("q").oninput=render;$("sev").onchange=render;$("fx").onchange=render;$("kev").onchange=render;["srt","prd","age","mine"].forEach(i=>$(i).onchange=render);$("stack").oninput=()=>{try{localStorage.setItem("stack",$("stack").value)}catch(_){}render()};addEventListener("hashchange",()=>{fromHash();tabs();render()});$("srt").onchange=()=>{sk=null;heads();render()};document.querySelectorAll("th[data-k]").forEach(h=>{const f=()=>{const k=h.dataset.k;if(sk===k)sd=-sd;else{sk=k;sd=DEF[k]}heads();render()};h.onclick=f;h.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();f()}}});prods();fromHash();stats();tabs();render();renderSrc({},false);addEventListener("keydown",ev=>{if(ev.key==="/"&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){ev.preventDefault();$("q").focus()}});$("lg").innerHTML="<span>Fix status:</span>"+Object.values(FX).map(f=>`<span class="fx ${f[1]}">${f[0]}</span>`).join("");
 const CP={SAP:0,Kernel:1,Kubernetes:2,Containers:3,Linux:4};
 const tp=x=>{const s=x.source||"";return /^CISA KEV/.test(s)?0:/^SAP/.test(s)?1:/^Kubernetes/.test(s)?2:/^GitHub/.test(s)?3:/^NVD/.test(s)?4:/^Red Hat/.test(s)?5:/^OSV/.test(s)?6:7};
 const SEV={"Crítica":"Critical",Alta:"High","Média":"Medium",Baixa:"Low"},CAT={Contentores:"Containers"};
