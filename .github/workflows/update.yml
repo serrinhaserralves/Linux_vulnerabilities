@@ -20,7 +20,9 @@ jobs:
       - run: python collector/collector.py
         env: {VULN_DB: vulns.db, VULN_JSON: site/vulns.json, NVD_API_KEY: "${{ secrets.NVD_API_KEY }}", SITE_URL: "${{ vars.SITE_URL }}"}
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with: {path: site}
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          name: github-pages
+          path: site
       - id: d
         uses: actions/deploy-pages@v4
